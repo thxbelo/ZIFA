@@ -293,14 +293,14 @@ export default function FixtureEditor({ initialData, onClear }: { initialData?: 
               >
                 {/* Header Pitch Backdrop */}
                 <div style={{ 
-                  padding: '50px 60px', 
+                  padding: '40px 60px', 
                   display: 'flex', 
                   alignItems: 'center', 
                   justifyContent: 'space-between', 
                   color: '#ffffff', 
                   position: 'relative', 
                   overflow: 'hidden',
-                  minHeight: '280px'
+                  minHeight: '340px'
                 }}>
                   <div style={{
                     position: 'absolute',
@@ -308,62 +308,77 @@ export default function FixtureEditor({ initialData, onClear }: { initialData?: 
                     backgroundImage: 'url("/Header Picture.png")',
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
+                    zIndex: 0
                   }}></div>
                   <div style={{
                     position: 'absolute',
                     inset: 0,
-                    backgroundColor: 'rgba(1, 81, 39, 0.85)', // brand-green-dark
+                    backgroundColor: 'rgba(1, 81, 39, 0.88)', // brand-green-dark
+                    zIndex: 1
                   }}></div>
                   <div style={{
                     position: 'absolute',
                     inset: '0 0 0 0',
                     background: 'linear-gradient(to top, #015127, transparent)',
-                    opacity: 0.5
+                    opacity: 0.6,
+                    zIndex: 2
                   }}></div>
 
-                  <div style={{ width: '130px', height: '130px', flexShrink: 0, position: 'relative', zIndex: 10 }}>
-                    <img src="/logo-2.png" alt="Zifa Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                  <div style={{ width: '180px', height: '180px', flexShrink: 0, position: 'relative', zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <img src="/logo-2.png" alt="Zifa Logo" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
                   </div>
+                  
                   <div style={{ textAlign: 'center', flex: 1, padding: '0 30px', position: 'relative', zIndex: 10 }}>
-                    <p style={{ fontFamily: "'Barlow', sans-serif", fontSize: '20px', fontWeight: 700, letterSpacing: '0.4em', textTransform: 'uppercase', opacity: 0.9, marginBottom: '8px' }}>{fixture.sponsor}</p>
-                    <h1 style={{ fontFamily: "'Barlow', sans-serif", fontSize: '64px', fontWeight: 900, letterSpacing: '-0.05em', lineHeight: '0.8', textTransform: 'uppercase', color: '#ffffff' }}>
+                    <p style={{ fontFamily: "'Barlow', sans-serif", fontSize: '20px', fontWeight: 800, letterSpacing: '0.4em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.9)', marginBottom: '12px' }}>
+                      {fixture.sponsor}
+                    </p>
+                    <h1 style={{ fontFamily: "'Barlow', sans-serif", fontSize: '64px', fontWeight: 900, letterSpacing: '-0.04em', lineHeight: '0.9', textTransform: 'uppercase', color: '#ffffff' }}>
                       SOUTHERN REGION<br />
                       <span style={{ color: '#39FF14' }}>SOCCER LEAGUE</span>
                     </h1>
                   </div>
-                  <div style={{ width: '130px', height: '130px', flexShrink: 0, position: 'relative', zIndex: 10 }}>
-                    <img src="/logo-1.jpg" alt="SRSL Logo" style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '50%', background: 'white', padding: '6px', border: '5px solid rgba(57, 255, 20, 0.2)' }} />
+
+                  <div style={{ width: '180px', height: '180px', flexShrink: 0, position: 'relative', zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: 'white', padding: '12px', border: '6px solid rgba(57, 255, 20, 0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                      <img src="/logo-1.jpg" alt="SRSL Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                    </div>
                   </div>
                 </div>
 
                 {/* Fixture Type Banner */}
-                <div style={{ display: 'flex', alignItems: 'stretch', gap: '15px', padding: '20px 60px', background: '#F8F9FA', position: 'relative', zIndex: 20 }}>
+                <div style={{ display: 'flex', alignItems: 'stretch', gap: '20px', padding: '24px 60px', background: '#F8F9FA', position: 'relative', zIndex: 20 }}>
                   <div style={{
                     flex: 1,
                     background: '#015127',
                     color: '#ffffff',
-                    padding: '12px 24px',
+                    padding: '14px 24px',
                     fontWeight: 900,
                     fontFamily: "'Barlow', sans-serif",
-                    fontSize: '24px',
-                    letterSpacing: '0.3em',
+                    fontSize: '22px',
+                    letterSpacing: '0.2em',
                     textAlign: 'center',
                     borderRadius: '12px',
                     border: '3px solid #00A859',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
                   }}>
                     {fixture.week.toUpperCase()}
                   </div>
                   <div style={{
                     background: '#39FF14',
                     color: '#015127',
-                    padding: '12px 36px',
+                    padding: '14px 44px',
                     fontWeight: 900,
                     fontFamily: "'Barlow', sans-serif",
                     fontSize: '32px',
                     letterSpacing: '0.1em',
                     fontStyle: 'italic',
                     borderRadius: '12px',
-                    boxShadow: '0 10px 20px rgba(57, 255, 20, 0.2)'
+                    boxShadow: '0 10px 20px rgba(57, 255, 20, 0.2)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
                   }}>
                     FIXTURE
                   </div>
@@ -414,17 +429,46 @@ export default function FixtureEditor({ initialData, onClear }: { initialData?: 
                 </div>
 
                 {/* Footer Strip */}
-                <div style={{ background: '#015127', padding: '30px 60px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '8px solid rgba(57, 255, 20, 0.2)', position: 'relative' }}>
-                  <div>
-                    <p style={{ color: '#fff', fontSize: '11px', fontWeight: 900, letterSpacing: '0.4em', opacity: 0.8, marginBottom: '5px' }}>
-                      PACIFIC BREEZE LEAGUE OFFICIAL FIXTURE
+                <div style={{ 
+                  background: '#015127', 
+                  padding: '40px 60px', 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center', 
+                  borderTop: '10px solid #39FF14', 
+                  position: 'relative' 
+                }}>
+                  <div style={{ flex: 1 }}>
+                    <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '12px', fontWeight: 800, letterSpacing: '0.3em', textTransform: 'uppercase', marginBottom: '4px' }}>
+                      PACIFIC BREEZE LEAGUE OFFICIAL
                     </p>
-                    <p style={{ color: '#39FF14', fontSize: '10px', fontWeight: 900, letterSpacing: '0.2em', borderLeft: '2px solid #39FF14', paddingLeft: '12px' }}>
-                      {fixture.week.toUpperCase()}
-                    </p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <span style={{ background: '#39FF14', color: '#015127', padding: '4px 12px', borderRadius: '6px', fontSize: '14px', fontWeight: 900, fontFamily: "'Barlow', sans-serif" }}>
+                        FIXTURES
+                      </span>
+                      <p style={{ color: '#ffffff', fontSize: '14px', fontWeight: 700, letterSpacing: '0.1em' }}>
+                        {fixture.week.toUpperCase()} SCHEDULE
+                      </p>
+                    </div>
                   </div>
+                  
                   <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                    <div style={{ background: '#2E5BFF', color: 'white', fontWeight: 900, fontSize: '14px', textTransform: 'uppercase', padding: '12px 30px', borderRadius: '15px', boxShadow: '0 10px 30px rgba(46, 91, 255, 0.3)' }}>
+                    <div style={{ 
+                      background: '#FFD200', 
+                      color: '#015127', 
+                      fontWeight: 900, 
+                      fontSize: '16px', 
+                      textTransform: 'uppercase', 
+                      padding: '14px 40px', 
+                      borderRadius: '16px', 
+                      boxShadow: '0 10px 30px rgba(255, 210, 0, 0.25)',
+                      fontFamily: "'Barlow', sans-serif",
+                      whiteSpace: 'nowrap',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      lineHeight: 1
+                    }}>
                       Follow Us!
                     </div>
                   </div>

@@ -76,26 +76,27 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
                 letterSpacing: '-0.02em',
               }}
             >
-              The Beautiful
+              The Heart of
               <br />
               <span style={{ color: '#FFD200', textShadow: '0 0 40px rgba(255,210,0,0.45)' }}>
-                Game
+                Football
               </span>
             </h2>
 
             {/* Sub-headline */}
             <p
               className="text-xl md:text-2xl font-black mb-6 uppercase tracking-widest"
-              style={{ color: 'rgba(255,255,255,0.65)' }}
+              style={{ color: '#00A859' }}
             >
               Pacific Breeze Southern Region
             </p>
 
             <p
-              className="text-base md:text-lg max-w-xl mx-auto leading-relaxed font-medium"
-              style={{ color: 'rgba(255,255,255,0.6)' }}
+              className="text-base md:text-lg max-w-2xl mx-auto leading-relaxed font-medium"
+              style={{ color: 'rgba(255,255,255,0.7)' }}
             >
-              Where passion meets competition and communities unite around Zimbabwe's most celebrated sport.
+              Upholding the proud footballing legacy of Bulawayo and the Matabeleland regions. 
+              We nurture the grassroots talent that defines Zimbabwe's sporting spirit.
             </p>
 
             {/* Hint text */}
@@ -103,7 +104,7 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
               className="mt-8 text-xs uppercase tracking-widest"
               style={{ color: 'rgba(255,255,255,0.25)' }}
             >
-              Click the simulation · trigger a neural signal
+              Click the simulation · witness the neural pulse of the game
             </p>
           </div>
         </div>
