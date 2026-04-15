@@ -1,0 +1,5 @@
+{
+  "name": "ZIFA Management Portal",
+  "description": "Official management portal for the Zimbabwe Football Association (ZIFA), featuring match calendars, payment analysis, and fixture generation.",
+  "requestFramePermissions": []
+}

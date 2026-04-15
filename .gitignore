@@ -1,0 +1,14 @@
+node_modules/
+build/
+dist/
+release/
+coverage/
+.DS_Store
+*.log
+.env*
+!.env.example
+
+# Large files / build artifacts
+*.zip
+*.db
+*.sqlite
