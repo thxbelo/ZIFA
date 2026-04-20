@@ -44,9 +44,15 @@ export default function ResultsEditor({ initialData, onClear }: { initialData?: 
   const [mode, setMode] = useState<'results' | 'table'>('results');
   const [results, setResults] = useState<ResultsData>(initialData || blankResults);
   const [unplayedMatches, setUnplayedMatches] = useState<any[]>([]);
+  const [teams, setTeams] = useState<any[]>([]);
   const [downloading, setDownloading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const captureRef = useRef<HTMLDivElement>(null);
+
+  // Dynamic layout flag
+  const totalMatches = results.days.reduce((acc, d) => acc + d.matches.length, 0);
+  const isDense = totalMatches > 6;
+  const containerWidth = isDense ? '1700px' : '1100px';
 
   useEffect(() => {
     if (initialData) {
@@ -65,6 +71,19 @@ export default function ResultsEditor({ initialData, onClear }: { initialData?: 
       console.error(err);
     }
   };
+
+  const fetchTeams = async () => {
+    try {
+      const data = await apiFetch('/teams', { headers: getAuthHeaders() });
+      setTeams(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    fetchTeams();
+  }, []);
 
   useEffect(() => {
     if (mode === 'results') {
@@ -439,8 +458,14 @@ export default function ResultsEditor({ initialData, onClear }: { initialData?: 
                         </button>
                         
                         <div className="flex flex-col sm:flex-row items-center gap-2">
-                          <input value={match.teamA} onChange={e => updateMatch(day.id, match.id, 'teamA', e.target.value)}
-                            placeholder="Home Team" className="w-full sm:flex-1 border rounded-lg px-2 py-1.5 text-xs font-bold uppercase focus:ring-2 focus:ring-zifa-green outline-none" />
+                          <select value={match.teamA} onChange={e => updateMatch(day.id, match.id, 'teamA', e.target.value)}
+                            className="w-full sm:flex-1 border rounded-lg px-2 py-1.5 text-xs font-bold uppercase focus:ring-2 focus:ring-zifa-green outline-none">
+                            <option value="">Home Team</option>
+                            {match.teamA && !teams.find(t => t.name.toUpperCase() === match.teamA.toUpperCase()) && (
+                              <option value={match.teamA}>{match.teamA}</option>
+                            )}
+                            {teams.map(t => <option key={t.id} value={t.name}>{t.name}</option>)}
+                          </select>
                           <div className="flex items-center justify-center gap-2 w-full sm:w-auto">
                             <input value={match.scoreA} onChange={e => updateMatch(day.id, match.id, 'scoreA', e.target.value)}
                               placeholder="0" className="w-12 border rounded-lg px-2 py-1.5 text-xs text-center font-black focus:ring-2 focus:ring-zifa-green outline-none" />
@@ -448,8 +473,14 @@ export default function ResultsEditor({ initialData, onClear }: { initialData?: 
                             <input value={match.scoreB} onChange={e => updateMatch(day.id, match.id, 'scoreB', e.target.value)}
                               placeholder="0" className="w-12 border rounded-lg px-2 py-1.5 text-xs text-center font-black focus:ring-2 focus:ring-zifa-green outline-none" />
                           </div>
-                          <input value={match.teamB} onChange={e => updateMatch(day.id, match.id, 'teamB', e.target.value)}
-                            placeholder="Away Team" className="w-full sm:flex-1 border rounded-lg px-2 py-1.5 text-xs font-bold uppercase focus:ring-2 focus:ring-zifa-green outline-none" />
+                          <select value={match.teamB} onChange={e => updateMatch(day.id, match.id, 'teamB', e.target.value)}
+                            className="w-full sm:flex-1 border rounded-lg px-2 py-1.5 text-xs font-bold uppercase focus:ring-2 focus:ring-zifa-green outline-none">
+                            <option value="">Away Team</option>
+                            {match.teamB && !teams.find(t => t.name.toUpperCase() === match.teamB.toUpperCase()) && (
+                              <option value={match.teamB}>{match.teamB}</option>
+                            )}
+                            {teams.map(t => <option key={t.id} value={t.name}>{t.name}</option>)}
+                          </select>
                         </div>
                       </div>
                     ))}
@@ -479,7 +510,7 @@ export default function ResultsEditor({ initialData, onClear }: { initialData?: 
                   ref={captureRef} 
                   className="geometric-watermark"
                   style={{ 
-                    width: '1100px', 
+                    width: containerWidth, 
                     backgroundColor: '#F8F9FA', 
                     boxShadow: '0 40px 100px rgba(0,0,0,0.3)', 
                     fontFamily: "'Inter', sans-serif",
@@ -578,28 +609,28 @@ export default function ResultsEditor({ initialData, onClear }: { initialData?: 
                         </div>
 
                         {/* Match Rows */}
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: isDense ? 'repeat(2, 1fr)' : '1fr', gap: isDense ? '12px 24px' : '12px' }}>
                           {day.matches.map((match) => (
-                            <div key={match.id} style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                              <div style={{ flex: 1, background: 'white', padding: '16px 24px', borderRadius: '15px', border: '1px solid #eee', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '20px', boxShadow: '0 4px 15px rgba(0,0,0,0.02)' }}>
-                                <div style={{ flex: 1, textAlign: 'right', textTransform: 'uppercase', fontWeight: 900, fontSize: '16px', color: '#000' }}>{match.teamA}</div>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: '#F8F9FA', padding: '6px 16px', borderRadius: '12px', border: '1px solid #eee' }}>
-                                  <span style={{ color: '#015127', fontSize: '24px', fontWeight: 900, width: '35px', textAlign: 'center' }}>{match.scoreA}</span>
+                            <div key={match.id} style={{ display: 'flex', alignItems: 'center', gap: isDense ? '10px' : '14px' }}>
+                              <div style={{ flex: 1, background: 'white', padding: isDense ? '12px 16px' : '16px 24px', borderRadius: '15px', border: '1px solid #eee', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '20px', boxShadow: '0 4px 15px rgba(0,0,0,0.02)' }}>
+                                <div style={{ flex: 1, textAlign: 'right', textTransform: 'uppercase', fontWeight: 900, fontSize: isDense ? '14px' : '16px', color: '#000' }}>{match.teamA}</div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: '#F8F9FA', padding: isDense ? '4px 12px' : '6px 16px', borderRadius: '12px', border: '1px solid #eee' }}>
+                                  <span style={{ color: '#015127', fontSize: isDense ? '20px' : '24px', fontWeight: 900, width: isDense ? '30px' : '35px', textAlign: 'center' }}>{match.scoreA}</span>
                                   <span style={{ color: '#DDD', fontSize: '11px', fontWeight: 900 }}>VS</span>
-                                  <span style={{ color: '#015127', fontSize: '24px', fontWeight: 900, width: '35px', textAlign: 'center' }}>{match.scoreB}</span>
+                                  <span style={{ color: '#015127', fontSize: isDense ? '20px' : '24px', fontWeight: 900, width: isDense ? '30px' : '35px', textAlign: 'center' }}>{match.scoreB}</span>
                                 </div>
-                                <div style={{ flex: 1, textAlign: 'left', textTransform: 'uppercase', fontWeight: 900, fontSize: '16px', color: '#000' }}>{match.teamB}</div>
+                                <div style={{ flex: 1, textAlign: 'left', textTransform: 'uppercase', fontWeight: 900, fontSize: isDense ? '14px' : '16px', color: '#000' }}>{match.teamB}</div>
                               </div>
                               
                               {/* Venue & Time Pillars */}
-                              <div style={{ display: 'flex', width: '300px', gap: '8px' }}>
-                                <div style={{ flex: 1, background: 'white', border: '1.5px solid rgba(1, 81, 39, 0.1)', padding: '10px', borderRadius: '15px', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                              <div style={{ display: 'flex', width: isDense ? '220px' : '300px', gap: '8px' }}>
+                                <div style={{ flex: 1, background: 'white', border: '1.5px solid rgba(1, 81, 39, 0.1)', padding: isDense ? '6px' : '10px', borderRadius: '15px', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                                   <p style={{ color: '#015127', fontSize: '8px', fontWeight: 900, opacity: 0.5, letterSpacing: '0.1em' }}>VENUE</p>
-                                  <p style={{ color: '#000', fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>{match.venue}</p>
+                                  <p style={{ color: '#000', fontSize: isDense ? '9px' : '10px', fontWeight: 900, textTransform: 'uppercase', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>{match.venue}</p>
                                 </div>
-                                <div style={{ width: '90px', background: '#015127', padding: '10px', borderRadius: '15px', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center', boxShadow: '0 10px 20px rgba(1, 81, 39, 0.2)' }}>
+                                <div style={{ width: isDense ? '75px' : '90px', background: '#015127', padding: isDense ? '6px' : '10px', borderRadius: '15px', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center', boxShadow: '0 10px 20px rgba(1, 81, 39, 0.2)' }}>
                                   <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '8px', fontWeight: 900, letterSpacing: '0.1em' }}>TIME</p>
-                                  <p style={{ color: '#39FF14', fontSize: '12px', fontWeight: 900, fontFamily: "'Barlow', sans-serif" }}>{match.time}</p>
+                                  <p style={{ color: '#39FF14', fontSize: isDense ? '11px' : '12px', fontWeight: 900, fontFamily: "'Barlow', sans-serif" }}>{match.time}</p>
                                 </div>
                               </div>
                             </div>

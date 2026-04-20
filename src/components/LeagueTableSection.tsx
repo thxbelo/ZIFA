@@ -270,6 +270,191 @@ export default function LeagueTableSection() {
           </div>
         )}
       </div>
+
+      {/* Hidden Export Template */}
+      <div style={{ position: 'absolute', opacity: 0, pointerEvents: 'none', zIndex: -1, left: 0, top: 0 }}>
+        <div
+          ref={tableRef}
+          className="geometric-watermark"
+          style={{
+            width: '1100px',
+            backgroundColor: '#ffffff',
+            fontFamily: "'Inter', sans-serif",
+            overflow: 'hidden',
+            position: 'relative',
+          }}
+        >
+          <ExportWatermark />
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            {/* Header Pitch Backdrop */}
+            <div style={{ 
+              padding: '40px 60px', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'space-between', 
+              color: '#ffffff', 
+              position: 'relative', 
+              overflow: 'hidden',
+              minHeight: '280px'
+            }}>
+              <div style={{
+                position: 'absolute',
+                inset: 0,
+                backgroundImage: 'url("/Header Picture.png")',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                zIndex: 0
+              }}></div>
+              <div style={{
+                position: 'absolute',
+                inset: 0,
+                backgroundColor: 'rgba(1, 81, 39, 0.88)', 
+                zIndex: 1
+              }}></div>
+              <div style={{
+                position: 'absolute',
+                inset: '0 0 0 0',
+                background: 'linear-gradient(to top, #015127, transparent)',
+                opacity: 0.6,
+                zIndex: 2
+              }}></div>
+
+              <div style={{ width: '160px', height: '160px', flexShrink: 0, position: 'relative', zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <img src="/logo-2.png" alt="Zifa Logo" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+              </div>
+              
+              <div style={{ textAlign: 'center', flex: 1, padding: '0 30px', position: 'relative', zIndex: 10 }}>
+                <p style={{ fontFamily: "'Barlow', sans-serif", fontSize: '18px', fontWeight: 800, letterSpacing: '0.4em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.9)', marginBottom: '8px' }}>
+                  PACIFIC BREEZE
+                </p>
+                <h1 style={{ fontFamily: "'Barlow', sans-serif", fontSize: '56px', fontWeight: 900, letterSpacing: '-0.04em', lineHeight: '0.9', textTransform: 'uppercase', color: '#ffffff' }}>
+                  SOUTHERN REGION<br />
+                  <span style={{ color: '#39FF14' }}>SOCCER LEAGUE</span>
+                </h1>
+              </div>
+
+              <div style={{ width: '160px', height: '160px', flexShrink: 0, position: 'relative', zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: 'white', padding: '12px', border: '5px solid rgba(57, 255, 20, 0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                  <img src="/logo-1.jpg" alt="SRSL Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                </div>
+              </div>
+            </div>
+
+            {/* Title Bar */}
+            <div style={{ background: '#00A859', padding: '14px', textAlign: 'center', position: 'relative', zIndex: 20 }}>
+              <span style={{ color: 'white', fontSize: '26px', fontWeight: 900, fontFamily: "'Barlow', sans-serif", letterSpacing: '0.2em', textTransform: 'uppercase', fontStyle: 'italic' }}>
+                OFFICIAL LOG TABLE
+              </span>
+            </div>
+
+            {/* Table Area */}
+            <div style={{ padding: '40px 60px' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: "'Inter', sans-serif" }}>
+                <thead>
+                  <tr style={{ background: '#015127', color: 'white' }}>
+                    <th style={{ padding: '18px', textAlign: 'center', fontWeight: 900, fontSize: '18px' }}>POS</th>
+                    <th style={{ padding: '18px', textAlign: 'left', fontWeight: 900, fontSize: '18px' }}>TEAM</th>
+                    <th style={{ padding: '18px', textAlign: 'center', fontWeight: 900, fontSize: '18px' }}>P</th>
+                    <th style={{ padding: '18px', textAlign: 'center', fontWeight: 900, fontSize: '18px' }}>W</th>
+                    <th style={{ padding: '18px', textAlign: 'center', fontWeight: 900, fontSize: '18px' }}>D</th>
+                    <th style={{ padding: '18px', textAlign: 'center', fontWeight: 900, fontSize: '18px' }}>L</th>
+                    <th style={{ padding: '18px', textAlign: 'center', fontWeight: 900, fontSize: '18px' }}>F</th>
+                    <th style={{ padding: '18px', textAlign: 'center', fontWeight: 900, fontSize: '18px' }}>A</th>
+                    <th style={{ padding: '18px', textAlign: 'center', fontWeight: 900, fontSize: '18px' }}>GD</th>
+                    <th style={{ padding: '18px', textAlign: 'center', fontWeight: 900, fontSize: '18px', background: '#FFD200', color: '#015127' }}>PTS</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {standings.map((row, idx) => {
+                    const isQualification = idx === 0;
+                    const isRelegation = idx >= standings.length - 4;
+                    const bgColor = idx % 2 === 0 ? '#f9fafb' : '#ffffff';
+                    
+                    return (
+                      <tr key={row.team_id} style={{ background: bgColor, borderBottom: '2px solid #f1f5f9' }}>
+                        <td style={{ padding: '16px', textAlign: 'center', fontWeight: 900, fontSize: '18px' }}>
+                          <div style={{
+                            width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto',
+                            background: isQualification ? '#FFD200' : isRelegation ? '#ef4444' : '#e2e8f0',
+                            color: isQualification ? '#015127' : isRelegation ? 'white' : '#475569'
+                          }}>
+                            {idx + 1}
+                          </div>
+                        </td>
+                        <td style={{ padding: '16px', fontWeight: 900, fontSize: '20px', textTransform: 'uppercase', color: isRelegation ? '#ef4444' : '#0f172a' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                            {row.logo_url && <img src={row.logo_url} style={{ width: '32px', height: '32px', objectFit: 'contain' }} />}
+                            {row.team_name}
+                          </div>
+                        </td>
+                        <td style={{ padding: '16px', textAlign: 'center', fontWeight: 800, fontSize: '18px', color: '#475569' }}>{row.mp}</td>
+                        <td style={{ padding: '16px', textAlign: 'center', fontWeight: 800, fontSize: '18px', color: '#0f172a' }}>{row.w}</td>
+                        <td style={{ padding: '16px', textAlign: 'center', fontWeight: 800, fontSize: '18px', color: '#475569' }}>{row.d}</td>
+                        <td style={{ padding: '16px', textAlign: 'center', fontWeight: 800, fontSize: '18px', color: '#475569' }}>{row.l}</td>
+                        <td style={{ padding: '16px', textAlign: 'center', fontWeight: 800, fontSize: '18px', color: '#475569' }}>{row.gf}</td>
+                        <td style={{ padding: '16px', textAlign: 'center', fontWeight: 800, fontSize: '18px', color: '#475569' }}>{row.ga}</td>
+                        <td style={{ padding: '16px', textAlign: 'center', fontWeight: 900, fontSize: '18px', color: row.gd > 0 ? '#00A859' : row.gd < 0 ? '#ef4444' : '#475569' }}>
+                          {row.gd > 0 ? `+${row.gd}` : row.gd}
+                        </td>
+                        <td style={{ padding: '16px', textAlign: 'center', fontWeight: 900, fontSize: '24px', background: '#FFD200', color: '#015127' }}>{row.pts}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+              <div style={{ marginTop: '24px', display: 'flex', gap: '30px', fontWeight: 800, fontSize: '16px', color: '#0f172a' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: '#FFD200' }}></div>
+                  PSL Qualification
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div style={{ width: '16px', height: '16px', borderRadius: '50%', background: '#ef4444' }}></div>
+                  Relegation Zone
+                </div>
+              </div>
+            </div>
+
+            {/* Footer Strip */}
+            <div style={{ background: '#015127', padding: '25px 60px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '8px solid #39FF14' }}>
+              <div style={{ flex: 1 }}>
+                <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px', fontWeight: 800, letterSpacing: '0.3em', textTransform: 'uppercase', marginBottom: '6px' }}>
+                  PACIFIC BREEZE LEAGUE OFFICIAL
+                </p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <span style={{ background: '#39FF14', color: '#015127', padding: '4px 14px', borderRadius: '6px', fontSize: '16px', fontWeight: 900, fontFamily: "'Barlow', sans-serif" }}>
+                    STANDINGS
+                  </span>
+                  <p style={{ color: '#ffffff', fontSize: '16px', fontWeight: 700, letterSpacing: '0.1em' }}>
+                    UPDATED: {new Date().toLocaleDateString('en-GB').replace(/\//g, '.')}
+                  </p>
+                </div>
+              </div>
+              
+              <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                <div style={{ 
+                  background: '#FFD200', 
+                  color: '#015127', 
+                  fontWeight: 900, 
+                  fontSize: '18px', 
+                  textTransform: 'uppercase', 
+                  padding: '16px 48px', 
+                  borderRadius: '20px', 
+                  boxShadow: '0 10px 30px rgba(255, 210, 0, 0.25)',
+                  fontFamily: "'Barlow', sans-serif",
+                  whiteSpace: 'nowrap',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  lineHeight: 1
+                }}>
+                  Follow Us!
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

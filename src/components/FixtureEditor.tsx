@@ -51,8 +51,26 @@ export default function FixtureEditor({ initialData, onClear }: { initialData?: 
   const [downloading, setDownloading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [savedFixtures, setSavedFixtures] = useState<any[]>([]);
+  const [teams, setTeams] = useState<any[]>([]);
   const captureRef = useRef<HTMLDivElement>(null);
   const { socket } = useSocket();
+
+  // Dynamic layout flag
+  const totalMatches = fixture.groups.reduce((acc, g) => acc + g.games.length, 0);
+  const isDense = totalMatches > 6;
+  const containerWidth = isDense ? '1400px' : '850px';
+
+  useEffect(() => {
+    const fetchTeams = async () => {
+      try {
+        const data = await apiFetch('/teams', { headers: getAuthHeaders() });
+        setTeams(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchTeams();
+  }, []);
 
   // Sync with initialData prop
   useEffect(() => {
@@ -411,11 +429,23 @@ export default function FixtureEditor({ initialData, onClear }: { initialData?: 
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
                     <div className="flex flex-col sm:flex-row gap-2">
-                      <input value={game.teamA} onChange={e => updateGame(group.id, game.id, { teamA: e.target.value })}
-                        placeholder="Home Team" className="w-full sm:flex-1 border rounded-lg px-2 py-1.5 text-xs font-bold uppercase focus:ring-2 focus:ring-[#008751] outline-none" />
+                      <select value={game.teamA} onChange={e => updateGame(group.id, game.id, { teamA: e.target.value })}
+                        className="w-full sm:flex-1 border rounded-lg px-2 py-1.5 text-xs font-bold uppercase focus:ring-2 focus:ring-[#008751] outline-none">
+                        <option value="">Home Team</option>
+                        {game.teamA && !teams.find(t => t.name.toUpperCase() === game.teamA.toUpperCase()) && (
+                          <option value={game.teamA}>{game.teamA}</option>
+                        )}
+                        {teams.map(t => <option key={t.id} value={t.name}>{t.name}</option>)}
+                      </select>
                       <div className="hidden sm:flex items-center justify-center w-6 text-center text-[10px] font-black text-gray-300 uppercase tracking-widest leading-none">VS</div>
-                      <input value={game.teamB} onChange={e => updateGame(group.id, game.id, { teamB: e.target.value })}
-                        placeholder="Away Team" className="w-full sm:flex-1 border rounded-lg px-2 py-1.5 text-xs font-bold uppercase focus:ring-2 focus:ring-[#008751] outline-none" />
+                      <select value={game.teamB} onChange={e => updateGame(group.id, game.id, { teamB: e.target.value })}
+                        className="w-full sm:flex-1 border rounded-lg px-2 py-1.5 text-xs font-bold uppercase focus:ring-2 focus:ring-[#008751] outline-none">
+                        <option value="">Away Team</option>
+                        {game.teamB && !teams.find(t => t.name.toUpperCase() === game.teamB.toUpperCase()) && (
+                          <option value={game.teamB}>{game.teamB}</option>
+                        )}
+                        {teams.map(t => <option key={t.id} value={t.name}>{t.name}</option>)}
+                      </select>
                     </div>
                     <div className="flex flex-col sm:flex-row gap-2">
                       <input value={game.venue} onChange={e => updateGame(group.id, game.id, { venue: e.target.value })}
@@ -495,7 +525,7 @@ export default function FixtureEditor({ initialData, onClear }: { initialData?: 
                 ref={captureRef}
                 className="geometric-watermark"
                 style={{
-                  width: '850px',
+                  width: containerWidth,
                   fontFamily: "'Inter', sans-serif",
                   backgroundColor: '#F8F9FA',
                   boxShadow: '0 40px 100px rgba(0,0,0,0.3)',
@@ -615,24 +645,24 @@ export default function FixtureEditor({ initialData, onClear }: { initialData?: 
                       </div>
 
                       {/* Games List */}
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: isDense ? 'repeat(2, 1fr)' : '1fr', gap: isDense ? '16px 24px' : '16px' }}>
                         {group.games.map((game) => (
-                          <div key={game.id} style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                            <div style={{ flex: 1, background: 'white', padding: '24px', borderRadius: '20px', border: '1px solid #eee', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px', boxShadow: '0 4px 15px rgba(0,0,0,0.02)' }}>
-                              <div style={{ flex: 1, textAlign: 'right', textTransform: 'uppercase', fontWeight: 900, fontSize: '20px', color: '#000' }}>{game.teamA}</div>
+                          <div key={game.id} style={{ display: 'flex', alignItems: 'center', gap: isDense ? '12px' : '16px' }}>
+                            <div style={{ flex: 1, background: 'white', padding: isDense ? '16px 20px' : '24px', borderRadius: '20px', border: '1px solid #eee', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px', boxShadow: '0 4px 15px rgba(0,0,0,0.02)' }}>
+                              <div style={{ flex: 1, textAlign: 'right', textTransform: 'uppercase', fontWeight: 900, fontSize: isDense ? '16px' : '20px', color: '#000' }}>{game.teamA}</div>
                               <div style={{ width: '60px', textAlign: 'center', color: '#999', fontWeight: 900, fontSize: '14px', fontStyle: 'italic' }}>VS</div>
-                              <div style={{ flex: 1, textAlign: 'left', textTransform: 'uppercase', fontWeight: 900, fontSize: '20px', color: '#000' }}>{game.teamB}</div>
+                              <div style={{ flex: 1, textAlign: 'left', textTransform: 'uppercase', fontWeight: 900, fontSize: isDense ? '16px' : '20px', color: '#000' }}>{game.teamB}</div>
                             </div>
                             
                             {/* Venue & Time Pillars */}
-                            <div style={{ display: 'flex', width: '380px', gap: '10px' }}>
-                              <div style={{ flex: 1, background: 'white', border: '2px solid rgba(1, 81, 39, 0.1)', padding: '12px', borderRadius: '20px', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                            <div style={{ display: 'flex', width: isDense ? '260px' : '380px', gap: '10px' }}>
+                              <div style={{ flex: 1, background: 'white', border: '2px solid rgba(1, 81, 39, 0.1)', padding: isDense ? '8px' : '12px', borderRadius: '20px', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                                 <p style={{ color: '#015127', fontSize: '10px', fontWeight: 900, opacity: 0.5, letterSpacing: '0.1em' }}>VENUE</p>
                                 <p style={{ color: '#000', fontSize: '11px', fontWeight: 900, textTransform: 'uppercase', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>{game.venue || 'TBA'}</p>
                               </div>
-                              <div style={{ width: '110px', background: '#015127', padding: '12px', borderRadius: '20px', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center', boxShadow: '0 10px 20px rgba(1, 81, 39, 0.2)' }}>
+                              <div style={{ width: isDense ? '90px' : '110px', background: '#015127', padding: isDense ? '8px' : '12px', borderRadius: '20px', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center', boxShadow: '0 10px 20px rgba(1, 81, 39, 0.2)' }}>
                                 <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '10px', fontWeight: 900, letterSpacing: '0.1em' }}>TIME</p>
-                                <p style={{ color: '#39FF14', fontSize: '14px', fontWeight: 900, fontFamily: "'Barlow', sans-serif" }}>{game.time}</p>
+                                <p style={{ color: '#39FF14', fontSize: isDense ? '12px' : '14px', fontWeight: 900, fontFamily: "'Barlow', sans-serif" }}>{game.time}</p>
                               </div>
                             </div>
                           </div>
