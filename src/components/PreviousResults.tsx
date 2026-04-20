@@ -4,6 +4,7 @@ import { apiFetch } from '@/lib/apiClient';
 import { getAuthHeaders } from '@/store/authStore';
 import { toast } from 'sonner';
 import { ResultsData } from './ResultsEditor';
+import { useSocket } from '@/lib/socket';
 
 interface SavedResult {
   id: string;
@@ -15,10 +16,24 @@ interface SavedResult {
 export default function PreviousResults({ onEdit }: { onEdit: (data: ResultsData) => void }) {
   const [results, setResults] = useState<SavedResult[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { socket } = useSocket();
 
   useEffect(() => {
     fetchResults();
   }, []);
+
+  useEffect(() => {
+    if (!socket) return;
+    const handleRefresh = () => {
+      fetchResults();
+    };
+    socket.on('resultsUpdate', handleRefresh);
+    socket.on('matchUpdate', handleRefresh);
+    return () => {
+      socket.off('resultsUpdate', handleRefresh);
+      socket.off('matchUpdate', handleRefresh);
+    };
+  }, [socket]);
 
   const fetchResults = async () => {
     try {
@@ -64,7 +79,7 @@ export default function PreviousResults({ onEdit }: { onEdit: (data: ResultsData
           results.map((result) => (
             <div key={result.id} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:border-[#008751] transition-all group relative overflow-hidden">
               <div className="absolute top-0 right-0 p-3 flex gap-1 transform translate-x-full group-hover:translate-x-0 transition-transform">
-                <button onClick={() => onEdit(result.data)} className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 shadow-sm border border-blue-100">
+                <button onClick={() => onEdit({ ...result.data, id: result.id })} className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 shadow-sm border border-blue-100">
                   <Edit3 className="w-4 h-4" />
                 </button>
                 <button onClick={() => deleteResult(result.id)} className="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 shadow-sm border border-red-100">
@@ -94,7 +109,7 @@ export default function PreviousResults({ onEdit }: { onEdit: (data: ResultsData
               </div>
               
               <button 
-                onClick={() => onEdit(result.data)}
+                onClick={() => onEdit({ ...result.data, id: result.id })}
                 className="mt-6 w-full py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest text-[#008751] bg-[#008751] bg-opacity-5 hover:bg-opacity-10 border border-[#008751] border-opacity-10 transition-colors"
               >
                 Open in Editor

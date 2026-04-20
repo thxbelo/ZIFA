@@ -8,6 +8,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { apiFetch } from '@/lib/apiClient';
+import { useSocket } from '@/lib/socket';
 
 const matchSchema = z.object({
   teamA: z.string().min(2, 'Home team Name is too short'),
@@ -31,6 +32,7 @@ interface Match {
 
 export default function CalendarSection() {
   const { isAuthenticated } = useAuthStore();
+  const { socket } = useSocket();
   const [currentMonth, setCurrentMonth] = useState(new Date(2026, 3));
   const [selectedDate, setSelectedDate] = useState(new Date(2026, 3, 3));
   const [matches, setMatches] = useState<Match[]>([]);
@@ -46,6 +48,19 @@ export default function CalendarSection() {
 
   useEffect(() => { fetchMatches(); }, []);
 
+  useEffect(() => {
+    if (!socket) return;
+    const handleRefresh = () => {
+      fetchMatches();
+    };
+    socket.on('matchUpdate', handleRefresh);
+    socket.on('fixturesUpdate', handleRefresh);
+    return () => {
+      socket.off('matchUpdate', handleRefresh);
+      socket.off('fixturesUpdate', handleRefresh);
+    };
+  }, [socket]);
+
   const fetchMatches = async () => {
     try {
       const data = await apiFetch('/matches');
@@ -53,10 +68,10 @@ export default function CalendarSection() {
       setMatches(data);
     } catch {
       setMatches([
-        { id: '1', date: '2026-04-03', teamA: 'Nkayi Utd', teamB: 'Bulawayo City', venue: 'White City Stadium', time: '15:00', category: 'League' },
-        { id: '2', date: '2026-04-03', teamA: 'Indlovu FC', teamB: 'Zim Saints FC', venue: 'Llewellin Stadium', time: '15:00', category: 'Cup' },
-        { id: '3', date: '2026-04-04', teamA: 'Njube Spurs', teamB: 'Aqua Stars FC', venue: 'White City Stadium', time: '15:00', category: 'League' },
-        { id: '4', date: '2026-04-10', teamA: 'Highlanders', teamB: 'Dynamos', venue: 'Barbourfields', time: '15:00', category: 'League' },
+        { id: '1', date: '2026-04-03', teamA: 'Nkayi Vision FC', teamB: 'Bulawayo City', venue: 'White City Stadium', time: '15:00', category: 'League' },
+        { id: '2', date: '2026-04-03', teamA: 'Imbizo FC', teamB: 'Zim Saints FC', venue: 'Llewellin Stadium', time: '15:00', category: 'Cup' },
+        { id: '3', date: '2026-04-04', teamA: 'Njube Spurs FC', teamB: 'Aqua Stars FC', venue: 'White City Stadium', time: '15:00', category: 'League' },
+        { id: '4', date: '2026-04-10', teamA: 'Bulawayo Warriors', teamB: 'Bosso 90 FC', venue: 'Barbourfields', time: '15:00', category: 'League' },
       ]);
     }
   };
@@ -72,7 +87,18 @@ export default function CalendarSection() {
     };
     
     try {
-      await apiFetch('/matches', { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify(match) });
+      await apiFetch('/matches', {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          ...match,
+          competition_id: 'comp-division-one',
+          home_team_id: match.teamA,
+          away_team_id: match.teamB,
+          status: 'not_started',
+          played: false,
+        }),
+      });
       setMatches(prev => [...prev, match]);
       toast.success(`${match.teamA} vs ${match.teamB} added!`, { id: toastId });
       reset();

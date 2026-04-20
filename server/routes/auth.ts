@@ -15,6 +15,12 @@ export function createAuthRouter(dbWrapper: DbWrapper) {
     const { username, password } = req.body;
 
     try {
+      console.log('[Auth] Attempting login for:', username);
+      if (!dbWrapper.getUserByUsername) {
+        console.error('[Auth] Error: getUserByUsername is missing on dbWrapper!', Object.keys(dbWrapper));
+        throw new Error('Database adapter misconfiguration: getUserByUsername missing');
+      }
+
       const user = await dbWrapper.getUserByUsername(username);
 
       if (!user || !bcrypt.compareSync(password, user.password_hash)) {
@@ -28,8 +34,8 @@ export function createAuthRouter(dbWrapper: DbWrapper) {
         user: { id: user.id, username: user.username, role: user.role },
       });
     } catch (err: any) {
-      console.error('Login Error:', err);
-      res.status(500).json({ error: 'Internal server error during login' });
+      console.error('Login Error Detailed:', err);
+      res.status(500).json({ error: 'Internal server error during login: ' + err.message });
     }
   });
 

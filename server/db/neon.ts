@@ -30,22 +30,136 @@ export function getNeonPool() {
 // Uses CREATE TABLE IF NOT EXISTS so existing tables are never touched.
 async function ensureNeonSchema(pool: Pool) {
   await pool.query(`
+    CREATE TABLE IF NOT EXISTS public.teams (
+      id TEXT PRIMARY KEY,
+      name TEXT UNIQUE NOT NULL,
+      district TEXT,
+      stadium TEXT,
+      coach TEXT,
+      logo_url TEXT,
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS public.seasons (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      is_active BOOLEAN DEFAULT false,
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS public.competitions (
+      id TEXT PRIMARY KEY,
+      season_id TEXT REFERENCES public.seasons(id),
+      name TEXT NOT NULL,
+      type TEXT DEFAULT 'league',
+      is_active BOOLEAN DEFAULT true,
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    );
+
+    -- Ensure matches table has new columns
+    CREATE TABLE IF NOT EXISTS public.matches (
+      id TEXT PRIMARY KEY,
+      date TEXT NOT NULL, -- Keep for legacy
+      "teamA" TEXT NOT NULL, -- Keep for legacy
+      "teamB" TEXT NOT NULL, -- Keep for legacy
+      venue TEXT NOT NULL,
+      time TEXT NOT NULL,
+      category TEXT NOT NULL DEFAULT 'League',
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    );
+
+    ALTER TABLE public.matches ALTER COLUMN date DROP NOT NULL;
+    ALTER TABLE public.matches ALTER COLUMN "teamA" DROP NOT NULL;
+    ALTER TABLE public.matches ALTER COLUMN "teamB" DROP NOT NULL;
+    ALTER TABLE public.matches ALTER COLUMN venue DROP NOT NULL;
+    ALTER TABLE public.matches ALTER COLUMN time DROP NOT NULL;
+    ALTER TABLE public.matches ALTER COLUMN category DROP NOT NULL;
+
+    ALTER TABLE public.matches ADD COLUMN IF NOT EXISTS competition_id TEXT REFERENCES public.competitions(id);
+    ALTER TABLE public.matches ADD COLUMN IF NOT EXISTS home_team_id TEXT REFERENCES public.teams(id);
+    ALTER TABLE public.matches ADD COLUMN IF NOT EXISTS away_team_id TEXT REFERENCES public.teams(id);
+    ALTER TABLE public.matches ADD COLUMN IF NOT EXISTS match_week TEXT;
+    ALTER TABLE public.matches ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'not_started';
+    ALTER TABLE public.matches ADD COLUMN IF NOT EXISTS home_score INTEGER DEFAULT 0;
+    ALTER TABLE public.matches ADD COLUMN IF NOT EXISTS away_score INTEGER DEFAULT 0;
+    ALTER TABLE public.matches ADD COLUMN IF NOT EXISTS played BOOLEAN DEFAULT false;
+
+    CREATE TABLE IF NOT EXISTS public.match_events (
+      id TEXT PRIMARY KEY,
+      match_id TEXT REFERENCES public.matches(id),
+      player_id TEXT NOT NULL,
+      team_id TEXT REFERENCES public.teams(id),
+      event_type TEXT NOT NULL,
+      minute INTEGER,
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    );
+
+    -- STANDINGS VIEW (Automatic calculation)
+    CREATE OR REPLACE VIEW public.standings_view AS
+    WITH match_stats AS (
+      -- Home results
+      SELECT 
+        competition_id,
+        home_team_id AS team_id,
+        1 AS played,
+        CASE WHEN home_score > away_score THEN 1 ELSE 0 END AS won,
+        CASE WHEN home_score = away_score THEN 1 ELSE 0 END AS drawn,
+        CASE WHEN home_score < away_score THEN 1 ELSE 0 END AS lost,
+        home_score AS gf,
+        away_score AS ga,
+        (home_score - away_score) AS gd,
+        CASE 
+          WHEN home_score > away_score THEN 3 
+          WHEN home_score = away_score THEN 1 
+          ELSE 0 
+        END AS points
+      FROM public.matches
+      WHERE played = true AND competition_id IS NOT NULL
+      
+      UNION ALL
+      
+      -- Away results
+      SELECT 
+        competition_id,
+        away_team_id AS team_id,
+        1 AS played,
+        CASE WHEN away_score > home_score THEN 1 ELSE 0 END AS won,
+        CASE WHEN away_score = home_score THEN 1 ELSE 0 END AS drawn,
+        CASE WHEN away_score < home_score THEN 1 ELSE 0 END AS lost,
+        away_score AS gf,
+        home_score AS ga,
+        (away_score - home_score) AS gd,
+        CASE 
+          WHEN away_score > home_score THEN 3 
+          WHEN away_score = home_score THEN 1 
+          ELSE 0 
+        END AS points
+      FROM public.matches
+      WHERE played = true AND competition_id IS NOT NULL
+    )
+    SELECT 
+      t.id AS team_id,
+      t.name AS team_name,
+      ms.competition_id,
+      SUM(ms.played) AS mp,
+      SUM(ms.won) AS w,
+      SUM(ms.drawn) AS d,
+      SUM(ms.lost) AS l,
+      SUM(ms.gf) AS gf,
+      SUM(ms.ga) AS ga,
+      SUM(ms.gd) AS gd,
+      SUM(ms.points) AS pts
+    FROM public.teams t
+    JOIN match_stats ms ON t.id = ms.team_id
+    GROUP BY t.id, t.name, ms.competition_id
+    ORDER BY pts DESC, gd DESC, gf DESC;
+
+    -- Legacy tables (kept for migration)
     CREATE TABLE IF NOT EXISTS public.users (
       id TEXT PRIMARY KEY,
       username TEXT UNIQUE NOT NULL,
       password_hash TEXT NOT NULL,
       role TEXT NOT NULL DEFAULT 'admin',
-      created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-    );
-
-    CREATE TABLE IF NOT EXISTS public.matches (
-      id TEXT PRIMARY KEY,
-      date TEXT NOT NULL,
-      "teamA" TEXT NOT NULL,
-      "teamB" TEXT NOT NULL,
-      venue TEXT NOT NULL,
-      time TEXT NOT NULL,
-      category TEXT NOT NULL DEFAULT 'League',
       created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
     );
 
@@ -83,8 +197,17 @@ async function ensureNeonSchema(pool: Pool) {
       position TEXT NOT NULL,
       yellow_cards INTEGER DEFAULT 0,
       red_cards INTEGER DEFAULT 0,
+      nationality TEXT,
+      jersey_number INTEGER,
+      age INTEGER,
       created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
     );
+
+    ALTER TABLE public.players ADD COLUMN IF NOT EXISTS nationality TEXT;
+    ALTER TABLE public.players ADD COLUMN IF NOT EXISTS jersey_number INTEGER;
+    ALTER TABLE public.players ADD COLUMN IF NOT EXISTS age INTEGER;
+    ALTER TABLE public.players ADD COLUMN IF NOT EXISTS team_id TEXT REFERENCES public.teams(id);
+
   `);
   console.log('[ZIFA] Neon schema verified — all tables present.');
 }

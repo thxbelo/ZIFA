@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { apiFetch } from '@/lib/apiClient';
-import { Loader2, Facebook, Instagram, Twitter, Shield } from 'lucide-react';
+import { Loader2, Facebook, Instagram, Twitter, Shield, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useSocket } from '@/lib/socket';
+import LiveDataState from './LiveDataState';
 
 interface Match {
   teamA: string;
@@ -24,61 +26,85 @@ export interface ResultsData {
   days: MatchDay[];
 }
 
-const matchWeekData: ResultsData = {
-  week: "MATCH WEEK 3",
-  division: "DIVISION ONE",
-  days: [
-    {
-      date: "FRIDAY 3 APRIL 2026",
-      label: "RESULTS",
-      matches: [
-        { teamA: "NKAYI UTD", scoreA: 1, teamB: "BULAWAYO CITY", scoreB: 0, venue: "WHITE CITY STADIUM", time: "15:00 HRS" },
-        { teamA: "IMBIZO FC", scoreA: 0, teamB: "ZIM SAINTS FC", scoreB: 0, venue: "LLEWELLIN STADIUM", time: "15:00 HRS" },
-        { teamA: "MEGAWATT FC", scoreA: 1, teamB: "ZEBRA REVOLUTION", scoreB: 0, venue: "CHAKONA STADIUM", time: "15:00 HRS" },
-        { teamA: "CASMYN FC", scoreA: 0, teamB: "TALEN VISION", scoreB: 0, venue: "TURK MINE STADIUM", time: "15:00 HRS" },
-        { teamA: "BOSSO 90", scoreA: 0, teamB: "HWANGE FC", scoreB: 1, venue: "WHITE CITY B ARENA", time: "15:00 HRS" },
-      ]
-    },
-    {
-      date: "SATURDAY 4 APRIL 2026",
-      label: "FIXTURE",
-      matches: [
-        { teamA: "NJUBE SPURS", scoreA: 0, teamB: "AQUA STARS FC", scoreB: 1, venue: "WHITE CITY STADIUM", time: "15:00 HRS" },
-        { teamA: "MOSI ROVERS", scoreA: 2, teamB: "KHAMI UTD", scoreB: 1, venue: "CHINOTIMBA STADIUM", time: "15:00 HRS" },
-        { teamA: "BLACK ROCK", scoreA: 3, teamB: "BYO WARRIORS", scoreB: 0, venue: "CHAKONA STADIUM", time: "15:00 HRS" },
-        { teamA: "JORDAN FC", scoreA: 1, teamB: "VIC FALLS HERENTALS", scoreB: 1, venue: "FILABUSI STADIUM", time: "15:00 HRS" },
-      ]
-    }
-  ]
+const blankResults: ResultsData = {
+  week: 'LATEST RESULTS',
+  division: 'SOUTHERN REGION SOCCER LEAGUE',
+  days: [],
 };
 
 export default function MatchWeekResults() {
-  const [results, setResults] = useState<ResultsData>(matchWeekData);
+  const [results, setResults] = useState<ResultsData>(blankResults);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const { socket } = useSocket();
 
   useEffect(() => {
     fetchResults();
   }, []);
 
-  const fetchResults = async () => {
+  const fetchResults = async (mode: 'initial' | 'refresh' = 'initial') => {
+    if (mode === 'initial') {
+      setIsLoading(true);
+    } else {
+      setIsRefreshing(true);
+    }
+
     try {
       const data = await apiFetch('/results');
+      setLoadError(null);
       if (Array.isArray(data) && data.length > 0) {
         setResults(data[0].data);
+      } else {
+        setResults(blankResults);
       }
     } catch (err) {
       console.error('Failed to fetch results:', err);
+      setResults(blankResults);
+      setLoadError('The latest results could not be synced from the database.');
     } finally {
       setIsLoading(false);
+      setIsRefreshing(false);
     }
   };
 
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleRefresh = () => {
+      fetchResults('refresh');
+    };
+
+    socket.on('resultsUpdate', handleRefresh);
+    socket.on('matchUpdate', handleRefresh);
+
+    return () => {
+      socket.off('resultsUpdate', handleRefresh);
+      socket.off('matchUpdate', handleRefresh);
+    };
+  }, [socket]);
+
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center p-20 bg-white rounded-2xl shadow-sm border border-gray-100 geometric-watermark">
-        <Loader2 className="w-10 h-10 text-brand-green animate-spin" />
-        <p className="text-gray-400 mt-4 font-black tracking-widest uppercase text-xs">Syncing League Results...</p>
-      </div>
+      <LiveDataState
+        icon={RefreshCw}
+        title="Syncing league results"
+        description="Pulling the latest published match recap from the live database."
+        loading
+      />
+    );
+  }
+
+  if (loadError) {
+    return (
+      <LiveDataState
+        icon={RefreshCw}
+        title="Results feed unavailable"
+        description={loadError}
+        actionLabel="Retry sync"
+        onAction={() => fetchResults('initial')}
+        tone="warning"
+      />
     );
   }
 
@@ -126,11 +152,26 @@ export default function MatchWeekResults() {
         <h2 className="text-white text-3xl md:text-5xl font-black font-barlow tracking-[0.4em] uppercase drop-shadow-md">
           {results.week}
         </h2>
+        <div className="mt-3 flex justify-center">
+          <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[11px] font-black uppercase tracking-[0.2em] text-white/80">
+            {isRefreshing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <span className="h-2 w-2 rounded-full bg-brand-highlight" />}
+            {isRefreshing ? 'Refreshing' : 'Live database'}
+          </span>
+        </div>
       </div>
 
       {/* Main Content Body */}
       <div className="p-4 md:p-12 space-y-16">
-        {results.days.map((day, dIdx) => (
+        {results.days.length === 0 ? (
+          <LiveDataState
+            icon={Shield}
+            title="No published results yet"
+            description="Once a weekly recap is saved, the latest matchday card will appear here automatically."
+            actionLabel="Check again"
+            onAction={() => fetchResults('initial')}
+            tone="muted"
+          />
+        ) : results.days.map((day, dIdx) => (
           <div key={dIdx} className="space-y-8 animate-in slide-in-from-bottom-4 duration-500 delay-100">
             {/* Day Header with Large Date */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b-2 border-brand-green/10 pb-4">

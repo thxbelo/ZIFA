@@ -25,18 +25,19 @@ import ResultsEditor, { ResultsData } from './components/ResultsEditor';
 import PreviousResults from './components/PreviousResults';
 import PlayerManager from './components/PlayerManager';
 import PlayerStats from './components/PlayerStats';
+import HistorySection from './components/HistorySection';
 import Login from './pages/Login';
 import LandingPage from './components/LandingPage';
 
 type View = 'public' | 'login' | 'admin';
-type AdminTab = 'calendar' | 'payments' | 'fixtures' | 'previous_fixtures' | 'results_editor' | 'previous_results' | 'players';
+type AdminTab = 'fixtures' | 'results' | 'players' | 'payments' | 'archive';
 type PublicTab = 'home' | 'calendar' | 'fixtures' | 'table' | 'results' | 'stats';
 
 
 export default function App() {
   const { isAuthenticated, user, logout } = useAuthStore();
   const [view, setView] = useState<View>('public');
-  const [activeTab, setActiveTab] = useState<AdminTab>('calendar');
+  const [activeTab, setActiveTab] = useState<AdminTab>('fixtures');
   const [publicTab, setPublicTab] = useState<PublicTab>('home');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [editingFixture, setEditingFixture] = useState<FixtureData | null>(null);
@@ -51,13 +52,11 @@ export default function App() {
   };
 
   const adminNavItems = [
-    { id: 'calendar', label: 'Match Calendar', icon: CalendarIcon },
+    { id: 'fixtures', label: 'Fixtures & Scheduling', icon: CalendarIcon },
+    { id: 'results', label: 'Match Results & Table', icon: Trophy },
+    { id: 'players', label: 'Player Database', icon: Users },
     { id: 'payments', label: 'Payments & Analysis', icon: CreditCard },
-    { id: 'fixtures', label: 'Fixture Generator', icon: ImageIcon },
-    { id: 'previous_fixtures', label: 'Previous Fixtures', icon: LayoutDashboard },
-    { id: 'results_editor', label: 'Results Editor', icon: ImageIcon },
-    { id: 'previous_results', label: 'Results History', icon: LayoutDashboard },
-    { id: 'players', label: 'Player Management', icon: Users },
+    { id: 'archive', label: 'Archive / History', icon: LayoutDashboard },
   ];
 
   // ── LOGIN PAGE ────────────────────────────────────────────────
@@ -184,7 +183,7 @@ export default function App() {
     <div className="min-h-screen bg-gray-50 flex flex-col lg:flex-row">
       {/* Admin Sidebar */}
       <aside className={cn(
-        "fixed inset-y-0 left-0 z-50 w-64 bg-zifa-green text-white transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 flex flex-col",
+        "fixed inset-y-0 left-0 z-50 w-64 bg-zifa-green text-white transform transition-transform duration-300 ease-in-out flex flex-col overflow-hidden lg:sticky lg:top-0 lg:h-screen lg:translate-x-0",
         isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         {/* Logo */}
@@ -199,7 +198,7 @@ export default function App() {
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 px-4 py-6 space-y-1.5">
+        <nav className="flex-1 overflow-y-auto px-4 py-6 space-y-1.5">
           {adminNavItems.map((item) => (
             <button
               key={item.id}
@@ -218,7 +217,7 @@ export default function App() {
         </nav>
 
         {/* User Info + Logout */}
-        <div className="p-4 border-t border-white/10">
+        <div className="mt-auto border-t border-white/10 bg-zifa-green p-4">
           <div className="bg-white/10 rounded-2xl p-4 border border-white/10 mb-3">
             <p className="text-[10px] font-bold uppercase tracking-widest opacity-60 mb-2">Signed in as</p>
             <div className="flex items-center gap-3">
@@ -263,37 +262,32 @@ export default function App() {
 
         {/* Admin Content */}
         <div className="p-4 lg:p-8 max-w-7xl mx-auto w-full flex-1">
-          {activeTab === 'calendar' && <CalendarSection />}
-          {activeTab === 'payments' && <PaymentsSection />}
           {activeTab === 'fixtures' && (
             <FixtureEditor
               initialData={editingFixture}
               onClear={() => setEditingFixture(null)}
             />
           )}
-          {activeTab === 'previous_fixtures' && (
-            <PreviousFixtures
-              onEdit={(data) => {
-                setEditingFixture(data);
-                setActiveTab('fixtures');
-              }}
-            />
-          )}
-          {activeTab === 'results_editor' && (
+          {activeTab === 'results' && (
             <ResultsEditor
               initialData={editingResults}
               onClear={() => setEditingResults(null)}
             />
           )}
-          {activeTab === 'previous_results' && (
-            <PreviousResults
-              onEdit={(data) => {
+          {activeTab === 'players' && <PlayerManager />}
+          {activeTab === 'payments' && <PaymentsSection />}
+          {activeTab === 'archive' && (
+            <HistorySection 
+              onEditFixture={(data) => {
+                setEditingFixture(data);
+                setActiveTab('fixtures');
+              }}
+              onEditResults={(data) => {
                 setEditingResults(data);
-                setActiveTab('results_editor');
+                setActiveTab('results');
               }}
             />
           )}
-          {activeTab === 'players' && <PlayerManager />}
         </div>
       </main>
 

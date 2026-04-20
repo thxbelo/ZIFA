@@ -91,20 +91,48 @@ export async function getUserByUsername(username: string) {
   return db.prepare('SELECT * FROM users WHERE username = ?').get(username);
 }
 
-export async function getMatches() {
-  return db.prepare('SELECT * FROM matches ORDER BY date ASC').all();
+export async function getMatches(filters?: { unplayed?: boolean; played?: boolean }) {
+  let query = 'SELECT * FROM matches';
+  const conditions: string[] = [];
+
+  if (filters?.unplayed) conditions.push('(played IS NULL OR played = 0)');
+  if (filters?.played) conditions.push('played = 1');
+  if (conditions.length > 0) query += ` WHERE ${conditions.join(' AND ')}`;
+
+  query += ' ORDER BY date ASC';
+  return db.prepare(query).all();
 }
 
 export async function addMatch(match: any) {
-  db.prepare('INSERT INTO matches (id, date, teamA, teamB, venue, time, category) VALUES (?, ?, ?, ?, ?, ?, ?)').run(
+  try { db.exec(`ALTER TABLE matches ADD COLUMN played INTEGER DEFAULT 0`); } catch {}
+  try { db.exec(`ALTER TABLE matches ADD COLUMN home_score INTEGER DEFAULT 0`); } catch {}
+  try { db.exec(`ALTER TABLE matches ADD COLUMN away_score INTEGER DEFAULT 0`); } catch {}
+  try { db.exec(`ALTER TABLE matches ADD COLUMN status TEXT DEFAULT 'not_started'`); } catch {}
+  try { db.exec(`ALTER TABLE matches ADD COLUMN competition_id TEXT`); } catch {}
+
+  db.prepare('INSERT OR REPLACE INTO matches (id, date, teamA, teamB, venue, time, category, played, home_score, away_score, status, competition_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)').run(
     match.id,
     match.date,
-    match.teamA,
-    match.teamB,
+    match.teamA || match.home_team_id,
+    match.teamB || match.away_team_id,
     match.venue,
     match.time,
     match.category || 'League',
+    match.played ? 1 : 0,
+    match.home_score || 0,
+    match.away_score || 0,
+    match.status || 'not_started',
+    match.competition_id || null,
   );
+}
+
+export async function updateMatch(id: string, updates: any) {
+  const existing = db.prepare('SELECT * FROM matches WHERE id = ?').get(id);
+  if (!existing) throw new Error(`Match ${id} not found`);
+
+  const merged = { ...existing, ...updates, id };
+  await addMatch(merged);
+  return db.prepare('SELECT * FROM matches WHERE id = ?').get(id);
 }
 
 export async function deleteMatch(id: string) {
@@ -200,4 +228,3 @@ export async function updatePlayerCards(id: string, yellow: number, red: number)
 export async function deletePlayer(id: string) {
   db.prepare('DELETE FROM players WHERE id = ?').run(id);
 }
-

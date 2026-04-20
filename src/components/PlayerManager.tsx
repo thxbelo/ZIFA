@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Trash2, UserPlus, AlertTriangle, Shield, Search, Loader2 } from 'lucide-react';
 import { apiFetch } from '@/lib/apiClient';
-import { getAuthHeaders } from '@/store/authStore';
+import { getAuthHeaders, getAuthToken } from '@/store/authStore';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { useSocket } from '@/lib/socket';
 
 interface Player {
   id: string;
@@ -19,6 +20,7 @@ export default function PlayerManager() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [isAdding, setIsAdding] = useState(false);
+  const { socket } = useSocket();
   
   // New Player Form
   const [newPlayer, setNewPlayer] = useState({
@@ -30,6 +32,17 @@ export default function PlayerManager() {
   useEffect(() => {
     fetchPlayers();
   }, []);
+
+  useEffect(() => {
+    if (!socket) return;
+    const handleRefresh = () => {
+      fetchPlayers();
+    };
+    socket.on('playersUpdate', handleRefresh);
+    return () => {
+      socket.off('playersUpdate', handleRefresh);
+    };
+  }, [socket]);
 
   const fetchPlayers = async () => {
     try {
@@ -114,6 +127,39 @@ export default function PlayerManager() {
               className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-brand-green outline-none"
             />
           </div>
+          <label className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-900/10 cursor-pointer">
+            <UserPlus className="w-4 h-4" />
+            Bulk Upload (Excel)
+            <input 
+              type="file" 
+              className="hidden" 
+              accept=".xlsx,.xls"
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                
+                const formData = new FormData();
+                formData.append('file', file);
+
+                const toastId = toast.loading('Uploading player database...');
+                try {
+                  const token = getAuthToken();
+                  const res = await fetch(`${window.location.hostname === 'localhost' ? 'http://localhost:3001' : ''}/api/players/upload`, {
+                    method: 'POST',
+                    headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+                    body: formData
+                  });
+                  const data = await res.json();
+                  if (!res.ok) throw new Error(data.error);
+
+                  toast.success(`Successfully uploaded ${data.count} players!`, { id: toastId });
+                  fetchPlayers();
+                } catch (err: any) {
+                  toast.error(err.message, { id: toastId });
+                }
+              }}
+            />
+          </label>
           <button 
             onClick={() => setIsAdding(!isAdding)}
             className="flex items-center gap-2 bg-brand-green text-white px-5 py-2.5 rounded-xl font-bold hover:bg-green-900 transition shadow-lg shadow-green-900/10"

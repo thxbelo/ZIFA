@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { getAuthHeaders } from '@/store/authStore';
 import { toast } from 'sonner';
 import { apiFetch } from '@/lib/apiClient';
+import { useSocket } from '@/lib/socket';
 interface SavedFixture {
   id: string;
   week: string;
@@ -15,6 +16,7 @@ interface SavedFixture {
 export default function PreviousFixtures({ onEdit }: { onEdit: (data: FixtureData) => void }) {
   const [fixtures, setFixtures] = useState<SavedFixture[]>([]);
   const [loading, setLoading] = useState(true);
+  const { socket } = useSocket();
 
   const fetchFixtures = async () => {
     try {
@@ -31,6 +33,19 @@ export default function PreviousFixtures({ onEdit }: { onEdit: (data: FixtureDat
   useEffect(() => {
     fetchFixtures();
   }, []);
+
+  useEffect(() => {
+    if (!socket) return;
+    const handleRefresh = () => {
+      fetchFixtures();
+    };
+    socket.on('fixturesUpdate', handleRefresh);
+    socket.on('matchUpdate', handleRefresh);
+    return () => {
+      socket.off('fixturesUpdate', handleRefresh);
+      socket.off('matchUpdate', handleRefresh);
+    };
+  }, [socket]);
 
   const handleDelete = async (id: string) => {
     if (!window.confirm('Are you sure you want to delete this fixture? This action cannot be undone.')) return;
@@ -78,8 +93,8 @@ export default function PreviousFixtures({ onEdit }: { onEdit: (data: FixtureDat
                     </div>
                   </div>
                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/5">
-                    <button 
-                      onClick={() => onEdit(fixture.data)}
+                   <button 
+                      onClick={() => onEdit({ ...fixture.data, id: fixture.id })}
                       className="bg-white text-zifa-green px-4 py-2 rounded-lg font-bold text-xs shadow-lg flex items-center gap-2"
                     >
                       <Edit3 className="w-3 h-3" /> Edit / View
@@ -111,7 +126,7 @@ export default function PreviousFixtures({ onEdit }: { onEdit: (data: FixtureDat
                       ))}
                    </div>
                    <button 
-                    onClick={() => onEdit(fixture.data)}
+                    onClick={() => onEdit({ ...fixture.data, id: fixture.id })}
                     className="text-xs font-bold text-zifa-green hover:underline flex items-center gap-1"
                    >
                      Open in Generator

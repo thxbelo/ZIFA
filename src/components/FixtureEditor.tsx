@@ -1,9 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { toPng } from 'html-to-image';
-import { Download, Plus, Trash2, Edit3, Loader2 } from 'lucide-react';
-import { getAuthHeaders } from '@/store/authStore';
+import { Download, Plus, Trash2, Edit3, Loader2, Calendar, Image as ImageIcon } from 'lucide-react';
+import { getAuthHeaders, getAuthToken } from '@/store/authStore';
 import { toast } from 'sonner';
 import { apiFetch } from '@/lib/apiClient';
+import { cn } from '@/lib/utils';
+import ExportWatermark from './ExportWatermark';
+import { useSocket } from '@/lib/socket';
 
 interface Game {
   id: string;
@@ -11,6 +14,11 @@ interface Game {
   teamB: string;
   venue: string;
   time: string;
+  homeScore?: number;
+  awayScore?: number;
+  status: 'not_started' | 'in_progress' | 'finished' | 'postponed';
+  played: boolean;
+  competition_id?: string;
 }
 
 interface DateGroup {
@@ -38,30 +46,93 @@ const blankFixture: FixtureData = {
 function genId() { return Math.random().toString(36).slice(2, 9); }
 
 export default function FixtureEditor({ initialData, onClear }: { initialData?: FixtureData | null, onClear?: () => void }) {
+  const [mode, setMode] = useState<'drafting' | 'scheduling'>('drafting');
   const [fixture, setFixture] = useState<FixtureData>(initialData || blankFixture);
   const [downloading, setDownloading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [savedFixtures, setSavedFixtures] = useState<any[]>([]);
   const captureRef = useRef<HTMLDivElement>(null);
+  const { socket } = useSocket();
 
-  // Sync with initialData prop (important for 'Edit' from history)
+  // Sync with initialData prop
   useEffect(() => {
     if (initialData) {
       setFixture(initialData);
+      setMode('drafting');
     } else {
       setFixture(blankFixture);
     }
   }, [initialData]);
+
+  const fetchSaved = async () => {
+    try {
+      const data = await apiFetch('/fixtures', { headers: getAuthHeaders() });
+      setSavedFixtures(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    if (mode === 'scheduling') {
+      fetchSaved();
+    }
+  }, [mode]);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleRefresh = () => {
+      if (mode === 'scheduling') {
+        fetchSaved();
+      }
+    };
+
+    socket.on('fixturesUpdate', handleRefresh);
+
+    return () => {
+      socket.off('fixturesUpdate', handleRefresh);
+    };
+  }, [socket, mode]);
 
   const saveToBackend = async (overwrite: boolean = false) => {
     setIsSaving(true);
     const toastId = toast.loading(overwrite ? 'Updating fixture...' : 'Saving as new...');
     try {
       const saveId = (overwrite && fixture.id) ? fixture.id : genId();
+      
+      // 1. Save the Fixture (Legacy/JSONB structure for preview)
       await apiFetch('/fixtures', {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify({ id: saveId, week: fixture.week, data: { ...fixture, id: saveId } }),
       });
+
+      // 2. Sync INDIVIDUAL matches to the new normalized table (For Live Log/Standings)
+      // This ensures that current statuses/scores are synchronized immediately.
+      for (const group of fixture.groups) {
+        for (const game of group.games) {
+          if (!game.teamA || !game.teamB) continue;
+          await apiFetch('/matches', {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({
+              id: game.id,
+              competition_id: 'comp-division-one', // Default
+              home_team_id: game.teamA, // In a real app, this would be a UUID, but we use names for now
+              away_team_id: game.teamB,
+              date: group.dateLabel,
+              venue: game.venue,
+              time: game.time,
+              match_week: fixture.week,
+              status: game.status,
+              home_score: game.homeScore || 0,
+              away_score: game.awayScore || 0,
+              played: game.played
+            }),
+          });
+        }
+      }
       
       setFixture(prev => ({ ...prev, id: saveId }));
       toast.success(overwrite ? 'Fixture updated!' : 'Fixture saved successfully!', { id: toastId });
@@ -89,7 +160,6 @@ export default function FixtureEditor({ initialData, onClear }: { initialData?: 
         cacheBust: true,
         pixelRatio: 3,
         backgroundColor: '#ffffff',
-        // Workaround for some browsers returning undefined fontFamily during webfont embedding (crashes inside html-to-image).
         skipFonts: true,
       });
       const link = document.createElement('a');
@@ -127,7 +197,18 @@ export default function FixtureEditor({ initialData, onClear }: { initialData?: 
       ...prev,
       groups: prev.groups.map(g =>
         g.id === gid
-          ? { ...g, games: [...g.games, { id: genId(), teamA: '', teamB: '', venue: '', time: '15:00 HRS' }] }
+          ? { 
+              ...g, 
+              games: [...g.games, { 
+                id: genId(), 
+                teamA: '', 
+                teamB: '', 
+                venue: '', 
+                time: '15:00 HRS', 
+                status: 'not_started', 
+                played: false 
+              }] 
+            }
           : g
       )
     }));
@@ -140,104 +221,187 @@ export default function FixtureEditor({ initialData, onClear }: { initialData?: 
       )
     }));
 
-  const updateGame = (gid: string, gaid: string, field: keyof Game, value: string) =>
+  const updateGame = (gid: string, gaid: string, updates: Partial<Game>) =>
     setFixture(prev => ({
       ...prev,
       groups: prev.groups.map(g =>
         g.id === gid
-          ? { ...g, games: g.games.map(ga => ga.id === gaid ? { ...ga, [field]: value } : ga) }
+          ? { ...g, games: g.games.map(ga => ga.id === gaid ? { ...ga, ...updates } : ga) }
           : g
       )
     }));
 
-  /* ── Render ──────────────────────────────────────────────── */
   return (
     <div className="space-y-6">
-      {/* Toolbar */}
-      <div className="flex items-center justify-between bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-        <div>
-          <h2 className="text-xl font-bold text-[#008751]">Fixture Generator</h2>
-          <p className="text-sm text-gray-500">Edit below — live preview updates instantly.</p>
-        </div>
-        <div className="flex gap-3">
-          <button
-            onClick={startNew}
-            className="text-gray-500 hover:text-gray-700 font-semibold px-2 py-2.5 text-sm"
-          >
-            Clear Slate
-          </button>
+      {/* Unified Toolbar */}
+      <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 animate-in fade-in slide-in-from-top-4 duration-500">
+        <div className="flex flex-col xl:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-6">
+            <div className="hidden sm:block p-3 bg-green-50 rounded-2xl border border-green-100">
+              <Calendar className="w-6 h-6 text-zifa-green" />
+            </div>
+            <div>
+              <h2 className="text-xl font-black text-zifa-green tracking-tight leading-none uppercase">Fixtures & Scheduling</h2>
+              <p className="text-xs text-gray-500 font-bold uppercase tracking-widest mt-1">Manage match schedules and venues</p>
+            </div>
+            
+            <div className="flex p-1 bg-gray-100 rounded-xl ml-2">
+              <button
+                onClick={() => setMode('drafting')}
+                className={cn(
+                  "px-4 py-2 rounded-lg text-xs font-black transition-all uppercase tracking-tight",
+                  mode === 'drafting' ? "bg-white text-zifa-green shadow-sm" : "text-gray-500 hover:text-gray-700"
+                )}
+              >
+                Drafting
+              </button>
+              <button
+                onClick={() => setMode('scheduling')}
+                className={cn(
+                  "px-4 py-2 rounded-lg text-xs font-black transition-all uppercase tracking-tight",
+                  mode === 'scheduling' ? "bg-white text-zifa-green shadow-sm" : "text-gray-500 hover:text-gray-700"
+                )}
+              >
+                Scheduling
+              </button>
+            </div>
+          </div>
           
-          {fixture.id && (
-            <button
-              onClick={() => saveToBackend(true)}
-              disabled={isSaving}
-              className="flex items-center gap-2 border border-[#008751] text-[#008751] px-5 py-2.5 rounded-lg hover:bg-green-50 transition font-semibold disabled:opacity-60"
-            >
-              Update Original
+          <div className="flex flex-wrap items-center justify-center gap-3 w-full xl:w-auto">
+            {mode === 'drafting' && (
+              <>
+                <button onClick={startNew} className="text-gray-500 hover:text-gray-900 font-bold px-4 py-2.5 text-xs uppercase tracking-widest transition">
+                  Clear
+                </button>
+                <label className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-xl hover:bg-blue-700 transition font-bold text-xs uppercase tracking-widest cursor-pointer shadow-lg shadow-blue-500/20">
+                  <ImageIcon className="w-4 h-4" />
+                  Load PDF / Word
+                  <input type="file" className="hidden" accept=".docx,.pdf" onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    const toastId = toast.loading('Analyzing document...');
+                    try {
+                      const token = getAuthToken();
+                      const res = await fetch(`${window.location.hostname === 'localhost' ? 'http://localhost:3001' : ''}/api/fixtures/upload`, {
+                        method: 'POST',
+                        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+                        body: formData
+                      });
+                      const data = await res.json();
+                      if (!res.ok) throw new Error(data.error);
+                      if (data.lines?.length) {
+                        const validLines = data.lines.filter((l: string) => /\s+v\s+|\s+vs\s+|\s+-\s+/i.test(l));
+                        if (validLines.length === 0) {
+                          toast.error('Could not find matches (e.g. A vs B) in document.', { id: toastId });
+                          return;
+                        }
+                        const newGames = validLines.slice(0, 30).map((line: string) => {
+                          const parts = line.split(/\s+v\s+|\s+vs\s+|\s+-\s+/i);
+                          return { id: genId(), teamA: parts[0]?.trim() || line, teamB: parts[1]?.trim() || 'TBA', venue: 'TBA', time: '15:00 HRS', status: 'not_started', played: false };
+                        });
+                        setFixture(prev => ({ ...prev, groups: [...prev.groups, { id: genId(), dayLabel: 'IMPORTED', dateLabel: 'VARIOUS', games: newGames }] }));
+                        toast.success('Imported successfully!', { id: toastId });
+                      }
+                    } catch (err: any) { toast.error(err.message, { id: toastId }); }
+                  }} />
+                </label>
+                {fixture.id && (
+                  <button onClick={() => saveToBackend(true)} disabled={isSaving}
+                    className="flex items-center gap-2 border-2 border-zifa-green text-zifa-green px-5 py-2.5 rounded-xl hover:bg-green-50 transition font-black text-xs uppercase tracking-widest disabled:opacity-60">
+                    Update
+                  </button>
+                )}
+                <button onClick={() => saveToBackend(false)} disabled={isSaving}
+                  className="bg-zifa-yellow text-zifa-green px-5 py-2.5 rounded-xl hover:bg-yellow-500 transition font-black text-xs uppercase tracking-widest shadow-lg shadow-yellow-500/20 disabled:opacity-60">
+                  {isSaving ? 'Saving...' : 'Save New'}
+                </button>
+              </>
+            )}
+            
+            <button onClick={downloadImage} disabled={downloading}
+              className="flex items-center gap-2 bg-zifa-green text-white px-5 py-2.5 rounded-xl hover:bg-green-800 transition font-black text-xs uppercase tracking-widest shadow-lg shadow-green-500/20 disabled:opacity-60">
+              <Download className="w-4 h-4" />
+              {downloading ? 'Exporting…' : 'Download PNG'}
             </button>
-          )}
-
-          <button
-            onClick={() => saveToBackend(false)}
-            disabled={isSaving}
-            className="flex items-center gap-2 bg-zifa-yellow text-zifa-green px-5 py-2.5 rounded-lg hover:bg-yellow-500 transition font-semibold disabled:opacity-60"
-          >
-            {isSaving ? 'Saving...' : 'Save as New'}
-          </button>
-          
-          <button
-            onClick={downloadImage}
-            disabled={downloading}
-            className="flex items-center gap-2 bg-[#008751] text-white px-5 py-2.5 rounded-lg hover:bg-green-800 transition font-semibold disabled:opacity-60"
-          >
-            <Download className="w-4 h-4" />
-            {downloading ? 'Generating…' : 'Download PNG'}
-          </button>
+          </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 items-start">
-        {/* ── LEFT: Editor Controls ── */}
+        {/* ── LEFT: Mode-based Controls ── */}
         <div className="space-y-5">
-          {/* Header fields */}
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 space-y-4">
-            <h3 className="font-bold text-gray-700 flex items-center gap-2"><Edit3 className="w-4 h-4" /> Header</h3>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Sponsor / Title Line</label>
-                <input value={fixture.sponsor} onChange={e => updateField('sponsor', e.target.value)}
-                  className="mt-1 w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#008751] outline-none" />
+          {mode === 'scheduling' ? (
+            /* Scheduling Mode: List of saved fixtures to pick from */
+            <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 space-y-4">
+              <div className="flex items-center justify-between border-b pb-4 mb-4">
+                 <h3 className="font-black text-gray-700 uppercase tracking-tight">Select Match Week to Schedule</h3>
+                 <span className="text-[10px] font-bold text-gray-400 bg-gray-50 px-2 py-1 rounded tracking-widest uppercase">{savedFixtures.length} Total</span>
               </div>
-              <div>
-                <label className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Match Week</label>
-                <input value={fixture.week} onChange={e => updateField('week', e.target.value)}
-                  className="mt-1 w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#008751] outline-none" />
+              
+              <div className="grid grid-cols-1 gap-3">
+                {savedFixtures.length === 0 ? (
+                  <p className="text-center py-10 text-gray-400 text-sm italic">No fixtures saved yet. Create one in Drafting mode.</p>
+                ) : (
+                  savedFixtures.map(sf => (
+                    <button
+                      key={sf.id}
+                      onClick={() => { setFixture({ ...sf.data, id: sf.id }); setMode('drafting'); }}
+                      className="flex items-center justify-between p-4 bg-gray-50 hover:bg-green-50 rounded-xl border border-transparent hover:border-green-200 transition group"
+                    >
+                      <div className="text-left">
+                        <p className="font-black text-zifa-green uppercase text-sm">{sf.week}</p>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{sf.data.groups.length} Match Days</p>
+                      </div>
+                      <Edit3 className="w-4 h-4 text-gray-300 group-hover:text-zifa-green transition" />
+                    </button>
+                  ))
+                )}
               </div>
             </div>
-          </div>
-
-          {/* Date groups */}
-          {fixture.groups.map((group) => (
-            <div key={group.id} className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="grid grid-cols-2 gap-3 flex-1 mr-3">
-                  <input
-                    value={group.dayLabel}
-                    onChange={e => updateGroup(group.id, 'dayLabel', e.target.value)}
-                    placeholder="DAY (e.g. FRIDAY)"
-                    className="border rounded-lg px-3 py-1.5 text-sm font-bold uppercase focus:ring-2 focus:ring-[#008751] outline-none"
-                  />
-                  <input
-                    value={group.dateLabel}
-                    onChange={e => updateGroup(group.id, 'dateLabel', e.target.value)}
-                    placeholder="DATE (e.g. 3 APRIL 2026)"
-                    className="border rounded-lg px-3 py-1.5 text-sm font-bold uppercase focus:ring-2 focus:ring-[#008751] outline-none"
-                  />
+          ) : (
+            /* Drafting Mode: Normal Editor Controls */
+            <>
+              {/* Header fields */}
+              <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 space-y-4">
+                <h3 className="font-bold text-gray-700 flex items-center gap-2 tracking-tight"><Edit3 className="w-4 h-4 text-zifa-green" /> Header Configuration</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Sponsor / League Title</label>
+                    <input value={fixture.sponsor} onChange={e => updateField('sponsor', e.target.value)}
+                      className="mt-1 w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#008751] outline-none font-bold" />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Match Week Label</label>
+                    <input value={fixture.week} onChange={e => updateField('week', e.target.value)}
+                      className="mt-1 w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#008751] outline-none font-bold" />
+                  </div>
                 </div>
-                <button onClick={() => removeGroup(group.id)} className="text-red-400 hover:text-red-600 p-1 rounded-lg hover:bg-red-50 transition">
-                  <Trash2 className="w-4 h-4" />
-                </button>
               </div>
+
+              {/* Date groups */}
+              {fixture.groups.map((group) => (
+                <div key={group.id} className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 space-y-4 animate-in fade-in slide-in-from-left-4 duration-300">
+                  <div className="flex items-center justify-between">
+                    <div className="flex flex-col sm:flex-row gap-3 flex-1 mr-3">
+                      <input
+                        value={group.dayLabel}
+                        onChange={e => updateGroup(group.id, 'dayLabel', e.target.value)}
+                        placeholder="DAY (e.g. FRIDAY)"
+                        className="w-full sm:w-1/2 border rounded-lg px-3 py-1.5 text-sm font-black uppercase focus:ring-2 focus:ring-[#008751] outline-none"
+                      />
+                      <input
+                        value={group.dateLabel}
+                        onChange={e => updateGroup(group.id, 'dateLabel', e.target.value)}
+                        placeholder="DATE (e.g. 3 APRIL 2026)"
+                        className="w-full sm:w-1/2 border rounded-lg px-3 py-1.5 text-sm font-black uppercase focus:ring-2 focus:ring-[#008751] outline-none"
+                      />
+                    </div>
+                    <button onClick={() => removeGroup(group.id)} className="text-red-400 hover:text-red-600 p-1 rounded-lg hover:bg-red-50 transition">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
 
               <div className="space-y-3">
                 {group.games.map((game) => (
@@ -246,17 +410,64 @@ export default function FixtureEditor({ initialData, onClear }: { initialData?: 
                       className="absolute top-2 right-2 text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition">
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
-                    <div className="grid grid-cols-2 gap-2">
-                      <input value={game.teamA} onChange={e => updateGame(group.id, game.id, 'teamA', e.target.value)}
-                        placeholder="Home Team" className="border rounded-lg px-2 py-1.5 text-xs font-bold uppercase focus:ring-2 focus:ring-[#008751] outline-none" />
-                      <input value={game.teamB} onChange={e => updateGame(group.id, game.id, 'teamB', e.target.value)}
-                        placeholder="Away Team" className="border rounded-lg px-2 py-1.5 text-xs font-bold uppercase focus:ring-2 focus:ring-[#008751] outline-none" />
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <input value={game.teamA} onChange={e => updateGame(group.id, game.id, { teamA: e.target.value })}
+                        placeholder="Home Team" className="w-full sm:flex-1 border rounded-lg px-2 py-1.5 text-xs font-bold uppercase focus:ring-2 focus:ring-[#008751] outline-none" />
+                      <div className="hidden sm:flex items-center justify-center w-6 text-center text-[10px] font-black text-gray-300 uppercase tracking-widest leading-none">VS</div>
+                      <input value={game.teamB} onChange={e => updateGame(group.id, game.id, { teamB: e.target.value })}
+                        placeholder="Away Team" className="w-full sm:flex-1 border rounded-lg px-2 py-1.5 text-xs font-bold uppercase focus:ring-2 focus:ring-[#008751] outline-none" />
                     </div>
-                    <div className="grid grid-cols-3 gap-2">
-                      <input value={game.venue} onChange={e => updateGame(group.id, game.id, 'venue', e.target.value)}
-                        placeholder="Venue" className="col-span-2 border rounded-lg px-2 py-1.5 text-xs uppercase focus:ring-2 focus:ring-[#008751] outline-none" />
-                      <input value={game.time} onChange={e => updateGame(group.id, game.id, 'time', e.target.value)}
-                        placeholder="15:00 HRS" className="border rounded-lg px-2 py-1.5 text-xs uppercase focus:ring-2 focus:ring-[#008751] outline-none" />
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <input value={game.venue} onChange={e => updateGame(group.id, game.id, { venue: e.target.value })}
+                        placeholder="Venue" className="w-full sm:flex-[2] border rounded-lg px-2 py-1.5 text-xs uppercase focus:ring-2 focus:ring-[#008751] outline-none" />
+                      <input value={game.time} onChange={e => updateGame(group.id, game.id, { time: e.target.value })}
+                        placeholder="15:00 HRS" className="w-full sm:flex-1 border rounded-lg px-2 py-1.5 text-xs uppercase focus:ring-2 focus:ring-[#008751] outline-none" />
+                    </div>
+                    
+                    {/* Scores & Status (New) */}
+                    <div className="bg-white/50 rounded-lg p-2 border border-dashed border-gray-200 space-y-2">
+                      <div className="flex items-center justify-between px-1">
+                        <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Outcome & Status</span>
+                        <label className="flex items-center gap-1.5 cursor-pointer">
+                          <input 
+                            type="checkbox" 
+                            checked={game.played} 
+                            onChange={e => updateGame(group.id, game.id, { played: e.target.checked, status: e.target.checked ? 'finished' : game.status })}
+                            className="w-3 h-3 accent-[#008751]" 
+                          />
+                          <span className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">Played</span>
+                        </label>
+                      </div>
+                      <div className="grid grid-cols-3 gap-2">
+                        <div className="flex items-center gap-1 bg-white border rounded-lg px-2 py-1">
+                          <span className="text-[9px] font-bold text-gray-400">H</span>
+                          <input 
+                            type="number" 
+                            value={game.homeScore || 0} 
+                            onChange={e => updateGame(group.id, game.id, { homeScore: parseInt(e.target.value) || 0 })}
+                            className="w-full text-xs font-black text-center outline-none" 
+                          />
+                        </div>
+                        <div className="flex items-center gap-1 bg-white border rounded-lg px-2 py-1">
+                          <span className="text-[9px] font-bold text-gray-400">A</span>
+                          <input 
+                            type="number" 
+                            value={game.awayScore || 0} 
+                            onChange={e => updateGame(group.id, game.id, { awayScore: parseInt(e.target.value) || 0 })}
+                            className="w-full text-xs font-black text-center outline-none" 
+                          />
+                        </div>
+                        <select 
+                          value={game.status} 
+                          onChange={e => updateGame(group.id, game.id, { status: e.target.value as any })}
+                          className="bg-white border rounded-lg px-1 py-1 text-[10px] font-bold text-gray-600 outline-none"
+                        >
+                          <option value="not_started">UPCOMING</option>
+                          <option value="in_progress">LIVE</option>
+                          <option value="finished">FINISHED</option>
+                          <option value="postponed">POSTPONED</option>
+                        </select>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -272,14 +483,14 @@ export default function FixtureEditor({ initialData, onClear }: { initialData?: 
             className="w-full flex items-center justify-center gap-2 text-[#008751] bg-white hover:bg-green-50 rounded-xl py-3 font-bold border border-dashed border-green-300 transition">
             <Plus className="w-4 h-4" /> Add Date Group
           </button>
-        </div>
-
-        {/* ── RIGHT: Live Preview ── */}
+        </>
+      )}
+    </div>
         <div className="sticky top-24">
           <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-4 text-center">Export Preview (Scaled 60%)</p>
-          <div className="bg-gray-200 rounded-3xl p-6 overflow-hidden flex justify-center shadow-inner border border-gray-300">
+          <div className="bg-gray-200 rounded-3xl p-4 md:p-6 overflow-x-auto overflow-y-hidden w-full flex shadow-inner border border-gray-300 scrollbar-thin scrollbar-thumb-gray-400">
             {/* Scale only for on-screen preview; capture uses the unscaled inner element */}
-            <div style={{ transform: 'scale(0.6)', transformOrigin: 'top center', width: '850px' }}>
+            <div style={{ transform: 'scale(1)', transformOrigin: 'top left', minWidth: '850px' }} className="mx-auto sm:scale-[0.6] sm:origin-top center">
               <div
                 ref={captureRef}
                 className="geometric-watermark"
@@ -288,9 +499,12 @@ export default function FixtureEditor({ initialData, onClear }: { initialData?: 
                   fontFamily: "'Inter', sans-serif",
                   backgroundColor: '#F8F9FA',
                   boxShadow: '0 40px 100px rgba(0,0,0,0.3)',
-                  overflow: 'hidden'
+                  overflow: 'hidden',
+                  position: 'relative'
                 }}
               >
+                <ExportWatermark />
+                <div style={{ position: 'relative', zIndex: 1 }}>
                 {/* Header Pitch Backdrop */}
                 <div style={{ 
                   padding: '40px 60px', 
@@ -474,6 +688,7 @@ export default function FixtureEditor({ initialData, onClear }: { initialData?: 
                   </div>
                 </div>
 
+              </div>
               </div>
             </div>
           </div>

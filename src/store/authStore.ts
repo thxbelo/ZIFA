@@ -53,3 +53,5 @@ export const getAuthHeaders = () => {
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
 };
+
+export const getAuthToken = () => useAuthStore.getState().token;
