@@ -174,27 +174,10 @@ export default function MatchWeekResults() {
         ) : results.days.map((day, dIdx) => (
           <div key={dIdx} className="space-y-8 animate-in slide-in-from-bottom-4 duration-500 delay-100">
             {/* Day Header with Large Date */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b-2 border-brand-green/10 pb-4">
-              <div className="flex items-center gap-6">
-                 <div className="text-center bg-brand-green text-white px-4 py-2 rounded-xl shadow-lg">
-                    <p className="text-[10px] font-black uppercase tracking-widest opacity-70 leading-none mb-1">DAY</p>
-                    <p className="text-2xl font-black font-barlow leading-none">{day.date.split(' ')[0][0]}</p>
-                 </div>
-                 <div>
-                    <p className="text-gray-400 font-black text-xs uppercase tracking-[0.2em] mb-1">{day.date.split(' ')[0]}</p>
-                    <h3 className="text-brand-green text-3xl md:text-4xl font-black font-barlow uppercase leading-none tracking-tighter">
-                      {day.date.split(' ').slice(1).join(' ')}
-                    </h3>
-                 </div>
-              </div>
-              
-              {/* Type Tag (Results/Fixture) */}
-              <div className={cn(
-                "px-6 py-2 rounded-full font-black font-barlow text-xl tracking-widest shadow-md",
-                day.label === 'RESULTS' ? "bg-brand-green text-white" : "bg-brand-highlight text-brand-green"
-              )}>
-                {day.label}
-              </div>
+            <div className="border-b-2 border-brand-green/10 pb-4 text-center">
+              <h3 className="text-brand-green text-3xl md:text-4xl font-black font-barlow uppercase leading-none tracking-tighter">
+                {day.date}
+              </h3>
             </div>
 
             {/* Matches List - The Stats Style View */}
@@ -218,21 +201,6 @@ export default function MatchWeekResults() {
                     </div>
                   </div>
 
-                  {/* Pillar Containers for Venue & Time */}
-                  <div className="flex items-stretch gap-2 md:w-96">
-                    <div className="flex-1 bg-white border-2 border-brand-green/20 rounded-2xl p-4 flex flex-col justify-center text-center shadow-sm">
-                      <p className="text-[10px] text-brand-green/50 font-black uppercase tracking-widest mb-1">VENUE</p>
-                      <p className="text-black text-xs font-black uppercase leading-tight truncate px-2">
-                        {match.venue}
-                      </p>
-                    </div>
-                    <div className="w-28 bg-brand-green rounded-2xl p-4 flex flex-col justify-center text-center shadow-lg shadow-brand-green/10">
-                      <p className="text-[10px] text-white/50 font-black uppercase tracking-widest mb-1">TIME</p>
-                      <p className="text-brand-highlight text-sm font-black uppercase leading-none font-barlow">
-                        {match.time}
-                      </p>
-                    </div>
-                  </div>
                 </div>
               ))}
             </div>

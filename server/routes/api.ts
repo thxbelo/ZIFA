@@ -201,7 +201,8 @@ export function createApiRouter(dbWrapper: any) {
       const fixtures = await dbWrapper.getFixtures();
       res.json(fixtures);
     } catch (err: any) {
-      res.status(500).json({ error: err.message });
+      console.error('[API ERROR] /fixtures GET failed:', err);
+      res.status(500).json({ error: err.message || 'Unknown database error' });
     }
   });
 

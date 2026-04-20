@@ -49,10 +49,10 @@ export default function ResultsEditor({ initialData, onClear }: { initialData?: 
   const [isSaving, setIsSaving] = useState(false);
   const captureRef = useRef<HTMLDivElement>(null);
 
-  // Dynamic layout flag
+  // Dynamic layout flag - Forced to single column for "longer" look
   const totalMatches = results.days.reduce((acc, d) => acc + d.matches.length, 0);
-  const isDense = totalMatches > 6;
-  const containerWidth = isDense ? '1700px' : '1100px';
+  const isDense = false; // Forced false to keep single column layout
+  const containerWidth = '1100px'; 
 
   useEffect(() => {
     if (initialData) {
@@ -482,6 +482,21 @@ export default function ResultsEditor({ initialData, onClear }: { initialData?: 
                             {teams.map(t => <option key={t.id} value={t.name}>{t.name}</option>)}
                           </select>
                         </div>
+                        
+                        <div className="flex flex-col sm:flex-row gap-2">
+                          <input 
+                            value={match.venue} 
+                            onChange={e => updateMatch(day.id, match.id, 'venue', e.target.value)}
+                            placeholder="Venue" 
+                            className="w-full sm:flex-[2] border rounded-lg px-2 py-1.5 text-xs uppercase focus:ring-2 focus:ring-zifa-green outline-none" 
+                          />
+                          <input 
+                            value={match.time} 
+                            onChange={e => updateMatch(day.id, match.id, 'time', e.target.value)}
+                            placeholder="15:00 HRS" 
+                            className="w-full sm:flex-1 border rounded-lg px-2 py-1.5 text-xs uppercase focus:ring-2 focus:ring-zifa-green outline-none" 
+                          />
+                        </div>
                       </div>
                     ))}
                     <button onClick={() => addMatch(day.id)}
@@ -594,18 +609,10 @@ export default function ResultsEditor({ initialData, onClear }: { initialData?: 
                     {results.days.map((day, dIdx) => (
                       <div key={day.id} style={{ marginBottom: dIdx === results.days.length - 1 ? 0 : '40px' }}>
                         {/* Day Heading */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '20px', borderBottom: '2px solid rgba(1, 81, 39, 0.1)', paddingBottom: '12px', marginBottom: '24px' }}>
-                          <div style={{ background: '#015127', color: 'white', padding: '6px 12px', borderRadius: '10px', textAlign: 'center' }}>
-                              <p style={{ fontSize: '8px', fontWeight: 900, textTransform: 'uppercase', opacity: 0.7 }}>DAY</p>
-                              <p style={{ fontSize: '18px', fontWeight: 900, fontFamily: "'Barlow', sans-serif" }}>{day.date.split(' ')[0][0]}</p>
-                          </div>
-                          <div>
-                            <p style={{ color: '#999', fontWeight: 900, fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.2em' }}>{day.date.split(' ')[0]}</p>
-                            <h3 style={{ color: '#015127', fontSize: '28px', fontWeight: 900, fontFamily: "'Barlow', sans-serif", textTransform: 'uppercase', lineHeight: 1 }}>{day.date.split(' ').slice(1).join(' ')}</h3>
-                          </div>
-                          <div style={{ marginLeft: 'auto', background: day.label === 'RESULTS' ? '#015127' : '#39FF14', padding: '6px 20px', borderRadius: '30px', color: day.label === 'RESULTS' ? 'white' : '#015127' }}>
-                            <span style={{ fontWeight: 900, fontSize: '16px', fontFamily: "'Barlow', sans-serif", letterSpacing: '0.1em' }}>{day.label}</span>
-                          </div>
+                        <div style={{ borderBottom: '2px solid rgba(1, 81, 39, 0.1)', paddingBottom: '12px', marginBottom: '24px', textAlign: 'center' }}>
+                          <h3 style={{ color: '#015127', fontSize: '32px', fontWeight: 900, fontFamily: "'Barlow', sans-serif", textTransform: 'uppercase', lineHeight: 1 }}>
+                            {day.date}
+                          </h3>
                         </div>
 
                         {/* Match Rows */}
@@ -620,18 +627,6 @@ export default function ResultsEditor({ initialData, onClear }: { initialData?: 
                                   <span style={{ color: '#015127', fontSize: isDense ? '20px' : '24px', fontWeight: 900, width: isDense ? '30px' : '35px', textAlign: 'center' }}>{match.scoreB}</span>
                                 </div>
                                 <div style={{ flex: 1, textAlign: 'left', textTransform: 'uppercase', fontWeight: 900, fontSize: isDense ? '14px' : '16px', color: '#000' }}>{match.teamB}</div>
-                              </div>
-                              
-                              {/* Venue & Time Pillars */}
-                              <div style={{ display: 'flex', width: isDense ? '220px' : '300px', gap: '8px' }}>
-                                <div style={{ flex: 1, background: 'white', border: '1.5px solid rgba(1, 81, 39, 0.1)', padding: isDense ? '6px' : '10px', borderRadius: '15px', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                                  <p style={{ color: '#015127', fontSize: '8px', fontWeight: 900, opacity: 0.5, letterSpacing: '0.1em' }}>VENUE</p>
-                                  <p style={{ color: '#000', fontSize: isDense ? '9px' : '10px', fontWeight: 900, textTransform: 'uppercase', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>{match.venue}</p>
-                                </div>
-                                <div style={{ width: isDense ? '75px' : '90px', background: '#015127', padding: isDense ? '6px' : '10px', borderRadius: '15px', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center', boxShadow: '0 10px 20px rgba(1, 81, 39, 0.2)' }}>
-                                  <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '8px', fontWeight: 900, letterSpacing: '0.1em' }}>TIME</p>
-                                  <p style={{ color: '#39FF14', fontSize: isDense ? '11px' : '12px', fontWeight: 900, fontFamily: "'Barlow', sans-serif" }}>{match.time}</p>
-                                </div>
                               </div>
                             </div>
                           ))}

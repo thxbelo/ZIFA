@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { toPng } from 'html-to-image';
 import { Download, Plus, Trash2, Edit3, Loader2, Calendar, Image as ImageIcon } from 'lucide-react';
+import { API_URL } from '@/lib/api';
 import { getAuthHeaders, getAuthToken } from '@/store/authStore';
 import { toast } from 'sonner';
 import { apiFetch } from '@/lib/apiClient';
@@ -302,7 +303,7 @@ export default function FixtureEditor({ initialData, onClear }: { initialData?: 
                     const toastId = toast.loading('Analyzing document...');
                     try {
                       const token = getAuthToken();
-                      const res = await fetch(`${window.location.hostname === 'localhost' ? 'http://localhost:3001' : ''}/api/fixtures/upload`, {
+                      const res = await fetch(`${API_URL}/fixtures/upload`, {
                         method: 'POST',
                         headers: token ? { 'Authorization': `Bearer ${token}` } : {},
                         body: formData

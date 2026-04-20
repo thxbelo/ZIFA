@@ -34,24 +34,30 @@ export default function LeagueTableSection() {
   const COMP_ID = 'comp-division-one';
 
   const fetchStandings = async (mode: 'initial' | 'refresh' = 'initial') => {
-    if (mode === 'initial') {
-      setLoading(true);
-    } else {
-      setRefreshing(true);
-    }
-
-    try {
-      const data = await apiFetch(`/standings/${COMP_ID}`);
-      setStandings(Array.isArray(data) ? data : []);
-      setLoadError(null);
-    } catch (err) {
-      console.error('Failed to fetch standings:', err);
-      setStandings([]);
-      setLoadError('The league table could not be loaded from the live standings service.');
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
+    // HARDCODED STANDINGS FOR PRESENTATION
+    const officialStandings: StandingRow[] = [
+      { team_id: '1',  team_name: 'HWANGE FC',           mp: 5, w: 3, d: 2, l: 0, gf: 11, ga: 2, gd: 9, pts: 11 },
+      { team_id: '2',  team_name: 'TALEN VISION FC',     mp: 5, w: 3, d: 2, l: 0, gf: 9,  ga: 3, gd: 6, pts: 11 },
+      { team_id: '3',  team_name: 'BLACKROCK FC',        mp: 5, w: 3, d: 1, l: 1, gf: 7,  ga: 3, gd: 4, pts: 10 },
+      { team_id: '4',  team_name: 'JORDAN FC',           mp: 5, w: 2, d: 3, l: 0, gf: 7,  ga: 4, gd: 3, pts: 9 },
+      { team_id: '5',  team_name: 'NKAYI UNITED FC',     mp: 5, w: 2, d: 3, l: 0, gf: 5,  ga: 3, gd: 2, pts: 9 },
+      { team_id: '6',  team_name: 'MEGAWATT FC',         mp: 5, w: 2, d: 2, l: 1, gf: 4,  ga: 2, gd: 2, pts: 8 },
+      { team_id: '7',  team_name: 'BULAWAYO WARRIORS',   mp: 5, w: 2, d: 2, l: 1, gf: 7,  ga: 6, gd: 1, pts: 8 },
+      { team_id: '8',  team_name: 'MOSI ROVERS FC',      mp: 5, w: 2, d: 2, l: 1, gf: 5,  ga: 5, gd: 0, pts: 8 },
+      { team_id: '9',  team_name: 'CASMYN FC',           mp: 5, w: 2, d: 2, l: 1, gf: 2,  ga: 5, gd: -3, pts: 8 },
+      { team_id: '10', team_name: 'VIC FALLS HERENTALS', mp: 5, w: 1, d: 3, l: 1, gf: 6,  ga: 7, gd: -1, pts: 6 },
+      { team_id: '11', team_name: 'ZIM SAINTS FC',       mp: 5, w: 1, d: 2, l: 2, gf: 3,  ga: 3, gd: 0, pts: 5 },
+      { team_id: '12', team_name: 'BULAWAYO CITY',       mp: 5, w: 1, d: 2, l: 2, gf: 4,  ga: 5, gd: -1, pts: 5 },
+      { team_id: '13', team_name: 'NJUBE SPURS FC',      mp: 5, w: 1, d: 2, l: 2, gf: 3,  ga: 5, gd: -2, pts: 5 },
+      { team_id: '14', team_name: 'KHAMI UNITED FC',     mp: 5, w: 1, d: 2, l: 2, gf: 4,  ga: 7, gd: -3, pts: 5 },
+      { team_id: '15', team_name: 'IMBIZO FC',           mp: 5, w: 1, d: 2, l: 2, gf: 2,  ga: 6, gd: -4, pts: 5 },
+      { team_id: '16', team_name: 'AQUA STARS FC',       mp: 5, w: 1, d: 1, l: 3, gf: 2,  ga: 5, gd: -3, pts: 4 },
+      { team_id: '17', team_name: 'ZEBRA REVOLUTION FC', mp: 5, w: 0, d: 1, l: 4, gf: 0,  ga: 4, gd: -4, pts: 1 },
+      { team_id: '18', team_name: 'BOSSO 90 FC',         mp: 5, w: 0, d: 0, l: 5, gf: 3,  ga: 9, gd: -6, pts: 0 },
+    ];
+    setStandings(officialStandings);
+    setLoading(false);
+    setRefreshing(false);
   };
 
   useEffect(() => {
@@ -343,7 +349,7 @@ export default function LeagueTableSection() {
             {/* Title Bar */}
             <div style={{ background: '#00A859', padding: '14px', textAlign: 'center', position: 'relative', zIndex: 20 }}>
               <span style={{ color: 'white', fontSize: '26px', fontWeight: 900, fontFamily: "'Barlow', sans-serif", letterSpacing: '0.2em', textTransform: 'uppercase', fontStyle: 'italic' }}>
-                OFFICIAL LOG TABLE
+                Week 5 Log Standing as at 19 April 2026
               </span>
             </div>
 
