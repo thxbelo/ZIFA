@@ -59,7 +59,7 @@ export default function FixtureEditor({ initialData, onClear }: { initialData?: 
   // Dynamic layout flag
   const totalMatches = fixture.groups.reduce((acc, g) => acc + g.games.length, 0);
   const isDense = totalMatches > 6;
-  const containerWidth = isDense ? '1400px' : '850px';
+  const containerWidth = '900px';
 
   useEffect(() => {
     const fetchTeams = async () => {
@@ -536,16 +536,16 @@ export default function FixtureEditor({ initialData, onClear }: { initialData?: 
               >
                 <ExportWatermark />
                 <div style={{ position: 'relative', zIndex: 1 }}>
-                {/* Header Pitch Backdrop */}
+                {/* Header Pitch Backdrop — Compact */}
                 <div style={{ 
-                  padding: '40px 60px', 
+                  padding: '22px 40px', 
                   display: 'flex', 
                   alignItems: 'center', 
                   justifyContent: 'space-between', 
                   color: '#ffffff', 
                   position: 'relative', 
                   overflow: 'hidden',
-                  minHeight: '340px'
+                  minHeight: '160px'
                 }}>
                   <div style={{
                     position: 'absolute',
@@ -558,7 +558,7 @@ export default function FixtureEditor({ initialData, onClear }: { initialData?: 
                   <div style={{
                     position: 'absolute',
                     inset: 0,
-                    backgroundColor: 'rgba(1, 81, 39, 0.88)', // brand-green-dark
+                    backgroundColor: 'rgba(1, 81, 39, 0.88)',
                     zIndex: 1
                   }}></div>
                   <div style={{
@@ -569,41 +569,41 @@ export default function FixtureEditor({ initialData, onClear }: { initialData?: 
                     zIndex: 2
                   }}></div>
 
-                  <div style={{ width: '180px', height: '180px', flexShrink: 0, position: 'relative', zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ width: '100px', height: '100px', flexShrink: 0, position: 'relative', zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <img src="/logo-2.png" alt="Zifa Logo" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
                   </div>
                   
-                  <div style={{ textAlign: 'center', flex: 1, padding: '0 30px', position: 'relative', zIndex: 10 }}>
-                    <p style={{ fontFamily: "'Barlow', sans-serif", fontSize: '20px', fontWeight: 800, letterSpacing: '0.4em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.9)', marginBottom: '12px' }}>
+                  <div style={{ textAlign: 'center', flex: 1, padding: '0 20px', position: 'relative', zIndex: 10 }}>
+                    <p style={{ fontFamily: "'Barlow', sans-serif", fontSize: '11px', fontWeight: 800, letterSpacing: '0.4em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.9)', marginBottom: '6px' }}>
                       {fixture.sponsor}
                     </p>
-                    <h1 style={{ fontFamily: "'Barlow', sans-serif", fontSize: '64px', fontWeight: 900, letterSpacing: '-0.04em', lineHeight: '0.9', textTransform: 'uppercase', color: '#ffffff' }}>
+                    <h1 style={{ fontFamily: "'Barlow', sans-serif", fontSize: '34px', fontWeight: 900, letterSpacing: '-0.04em', lineHeight: '0.9', textTransform: 'uppercase', color: '#ffffff' }}>
                       SOUTHERN REGION<br />
                       <span style={{ color: '#39FF14' }}>SOCCER LEAGUE</span>
                     </h1>
                   </div>
 
-                  <div style={{ width: '180px', height: '180px', flexShrink: 0, position: 'relative', zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: 'white', padding: '12px', border: '6px solid rgba(57, 255, 20, 0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                  <div style={{ width: '100px', height: '100px', flexShrink: 0, position: 'relative', zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: 'white', padding: '8px', border: '4px solid rgba(57, 255, 20, 0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
                       <img src="/logo-1.jpg" alt="SRSL Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                     </div>
                   </div>
                 </div>
 
-                {/* Fixture Type Banner */}
-                <div style={{ display: 'flex', alignItems: 'stretch', gap: '20px', padding: '24px 60px', background: '#F8F9FA', position: 'relative', zIndex: 20 }}>
+                {/* Week Banner — slim */}
+                <div style={{ display: 'flex', alignItems: 'stretch', gap: '12px', padding: '10px 40px', background: '#F8F9FA', position: 'relative', zIndex: 20 }}>
                   <div style={{
                     flex: 1,
                     background: '#015127',
                     color: '#ffffff',
-                    padding: '14px 24px',
+                    padding: '8px 16px',
                     fontWeight: 900,
                     fontFamily: "'Barlow', sans-serif",
-                    fontSize: '22px',
+                    fontSize: '13px',
                     letterSpacing: '0.2em',
                     textAlign: 'center',
-                    borderRadius: '12px',
-                    border: '3px solid #00A859',
+                    borderRadius: '8px',
+                    border: '2px solid #00A859',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center'
@@ -613,14 +613,14 @@ export default function FixtureEditor({ initialData, onClear }: { initialData?: 
                   <div style={{
                     background: '#39FF14',
                     color: '#015127',
-                    padding: '14px 44px',
+                    padding: '8px 28px',
                     fontWeight: 900,
                     fontFamily: "'Barlow', sans-serif",
-                    fontSize: '32px',
+                    fontSize: '18px',
                     letterSpacing: '0.1em',
                     fontStyle: 'italic',
-                    borderRadius: '12px',
-                    boxShadow: '0 10px 20px rgba(57, 255, 20, 0.2)',
+                    borderRadius: '8px',
+                    boxShadow: '0 6px 12px rgba(57, 255, 20, 0.2)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center'
@@ -629,42 +629,35 @@ export default function FixtureEditor({ initialData, onClear }: { initialData?: 
                   </div>
                 </div>
 
-                {/* Main Content Body */}
-                <div style={{ padding: '40px 60px 60px', minHeight: '400px' }}>
+                {/* Main Content Body — Ladder format */}
+                <div style={{ padding: '10px 40px 20px' }}>
                   {fixture.groups.map((group, gi) => (
-                    <div key={group.id} style={{ marginBottom: gi === fixture.groups.length - 1 ? 0 : '60px' }}>
-                      {/* Date Header */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '24px', borderBottom: '3px solid rgba(1, 81, 39, 0.1)', paddingBottom: '16px', marginBottom: '32px' }}>
-                         <div style={{ background: '#015127', color: 'white', padding: '8px 16px', borderRadius: '12px', textAlign: 'center' }}>
-                            <p style={{ fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', opacity: 0.7 }}>DAY</p>
-                            <p style={{ fontSize: '24px', fontWeight: 900, fontFamily: "'Barlow', sans-serif" }}>{group.dayLabel[0]}</p>
-                         </div>
-                         <div>
-                            <p style={{ color: '#999', fontWeight: 900, fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.2em' }}>{group.dayLabel}</p>
-                            <h3 style={{ color: '#015127', fontSize: '36px', fontWeight: 900, fontFamily: "'Barlow', sans-serif", textTransform: 'uppercase', lineHeight: 1 }}>{group.dateLabel}</h3>
-                         </div>
+                    <div key={group.id} style={{ marginBottom: gi === fixture.groups.length - 1 ? 0 : '8px' }}>
+                      {/* Date Header — slim bar */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(1, 81, 39, 0.07)', borderLeft: '4px solid #015127', padding: '5px 10px', marginBottom: '5px', borderRadius: '4px' }}>
+                        <span style={{ color: '#015127', fontWeight: 900, fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.2em', whiteSpace: 'nowrap' }}>{group.dayLabel}</span>
+                        <span style={{ color: '#015127', fontWeight: 900, fontSize: '11px', textTransform: 'uppercase', fontFamily: "'Barlow', sans-serif" }}>{group.dateLabel}</span>
                       </div>
 
-                      {/* Games List */}
-                      <div style={{ display: 'grid', gridTemplateColumns: isDense ? 'repeat(2, 1fr)' : '1fr', gap: isDense ? '16px 24px' : '16px' }}>
-                        {group.games.map((game) => (
-                          <div key={game.id} style={{ display: 'flex', alignItems: 'center', gap: isDense ? '12px' : '16px' }}>
-                            <div style={{ flex: 1, background: 'white', padding: isDense ? '16px 20px' : '24px', borderRadius: '20px', border: '1px solid #eee', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px', boxShadow: '0 4px 15px rgba(0,0,0,0.02)' }}>
-                              <div style={{ flex: 1, textAlign: 'right', textTransform: 'uppercase', fontWeight: 900, fontSize: isDense ? '16px' : '20px', color: '#000' }}>{game.teamA}</div>
-                              <div style={{ width: '60px', textAlign: 'center', color: '#999', fontWeight: 900, fontSize: '14px', fontStyle: 'italic' }}>VS</div>
-                              <div style={{ flex: 1, textAlign: 'left', textTransform: 'uppercase', fontWeight: 900, fontSize: isDense ? '16px' : '20px', color: '#000' }}>{game.teamB}</div>
+                      {/* Ladder rows — one match per row */}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        {group.games.map((game, gIdx) => (
+                          <div key={game.id} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            {/* Row number */}
+                            <div style={{ width: '18px', textAlign: 'center', color: '#bbb', fontSize: '9px', fontWeight: 900, flexShrink: 0 }}>{gIdx + 1}</div>
+                            {/* Team A */}
+                            <div style={{ flex: 1, background: 'white', padding: '7px 10px', borderRadius: '8px', border: '1px solid #eee', textAlign: 'right', textTransform: 'uppercase', fontWeight: 900, fontSize: '11px', color: '#111', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>{game.teamA}</div>
+                            {/* VS badge */}
+                            <div style={{ width: '28px', textAlign: 'center', color: '#015127', fontWeight: 900, fontSize: '9px', fontStyle: 'italic', flexShrink: 0 }}>VS</div>
+                            {/* Team B */}
+                            <div style={{ flex: 1, background: 'white', padding: '7px 10px', borderRadius: '8px', border: '1px solid #eee', textAlign: 'left', textTransform: 'uppercase', fontWeight: 900, fontSize: '11px', color: '#111', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>{game.teamB}</div>
+                            {/* Venue */}
+                            <div style={{ width: '140px', background: 'rgba(1,81,39,0.05)', border: '1px solid rgba(1,81,39,0.15)', padding: '7px 8px', borderRadius: '8px', textAlign: 'center', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', flexShrink: 0 }}>
+                              <span style={{ color: '#015127', fontSize: '9px', fontWeight: 900, textTransform: 'uppercase' }}>{game.venue || 'TBA'}</span>
                             </div>
-                            
-                            {/* Venue & Time Pillars */}
-                            <div style={{ display: 'flex', width: isDense ? '260px' : '380px', gap: '10px' }}>
-                              <div style={{ flex: 1, background: 'white', border: '2px solid rgba(1, 81, 39, 0.1)', padding: isDense ? '8px' : '12px', borderRadius: '20px', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                                <p style={{ color: '#015127', fontSize: '10px', fontWeight: 900, opacity: 0.5, letterSpacing: '0.1em' }}>VENUE</p>
-                                <p style={{ color: '#000', fontSize: '11px', fontWeight: 900, textTransform: 'uppercase', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>{game.venue || 'TBA'}</p>
-                              </div>
-                              <div style={{ width: isDense ? '90px' : '110px', background: '#015127', padding: isDense ? '8px' : '12px', borderRadius: '20px', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center', boxShadow: '0 10px 20px rgba(1, 81, 39, 0.2)' }}>
-                                <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '10px', fontWeight: 900, letterSpacing: '0.1em' }}>TIME</p>
-                                <p style={{ color: '#39FF14', fontSize: isDense ? '12px' : '14px', fontWeight: 900, fontFamily: "'Barlow', sans-serif" }}>{game.time}</p>
-                              </div>
+                            {/* Time */}
+                            <div style={{ width: '62px', background: '#015127', padding: '7px 6px', borderRadius: '8px', textAlign: 'center', flexShrink: 0 }}>
+                              <span style={{ color: '#39FF14', fontSize: '9px', fontWeight: 900, fontFamily: "'Barlow', sans-serif", whiteSpace: 'nowrap' }}>{game.time}</span>
                             </div>
                           </div>
                         ))}
@@ -673,40 +666,40 @@ export default function FixtureEditor({ initialData, onClear }: { initialData?: 
                   ))}
                 </div>
 
-                {/* Footer Strip */}
+                {/* Footer Strip — slim */}
                 <div style={{ 
                   background: '#015127', 
-                  padding: '40px 60px', 
+                  padding: '14px 40px', 
                   display: 'flex', 
                   justifyContent: 'space-between', 
                   alignItems: 'center', 
-                  borderTop: '10px solid #39FF14', 
+                  borderTop: '5px solid #39FF14', 
                   position: 'relative' 
                 }}>
                   <div style={{ flex: 1 }}>
-                    <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '12px', fontWeight: 800, letterSpacing: '0.3em', textTransform: 'uppercase', marginBottom: '4px' }}>
+                    <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '9px', fontWeight: 800, letterSpacing: '0.3em', textTransform: 'uppercase', marginBottom: '2px' }}>
                       PACIFIC BREEZE LEAGUE OFFICIAL
                     </p>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <span style={{ background: '#39FF14', color: '#015127', padding: '4px 12px', borderRadius: '6px', fontSize: '14px', fontWeight: 900, fontFamily: "'Barlow', sans-serif" }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ background: '#39FF14', color: '#015127', padding: '2px 8px', borderRadius: '4px', fontSize: '10px', fontWeight: 900, fontFamily: "'Barlow', sans-serif" }}>
                         FIXTURES
                       </span>
-                      <p style={{ color: '#ffffff', fontSize: '14px', fontWeight: 700, letterSpacing: '0.1em' }}>
+                      <p style={{ color: '#ffffff', fontSize: '10px', fontWeight: 700, letterSpacing: '0.1em' }}>
                         {fixture.week.toUpperCase()} SCHEDULE
                       </p>
                     </div>
                   </div>
                   
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <div style={{ 
                       background: '#FFD200', 
                       color: '#015127', 
                       fontWeight: 900, 
-                      fontSize: '16px', 
+                      fontSize: '10px', 
                       textTransform: 'uppercase', 
-                      padding: '14px 40px', 
-                      borderRadius: '16px', 
-                      boxShadow: '0 10px 30px rgba(255, 210, 0, 0.25)',
+                      padding: '8px 20px', 
+                      borderRadius: '8px', 
+                      boxShadow: '0 6px 16px rgba(255, 210, 0, 0.25)',
                       fontFamily: "'Barlow', sans-serif",
                       whiteSpace: 'nowrap',
                       display: 'flex',
