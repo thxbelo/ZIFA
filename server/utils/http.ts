@@ -3,8 +3,9 @@ import type { ZodSchema } from 'zod';
 
 export function sendError(res: Response, err: unknown, context: string, status = 500) {
   console.error(`[${context}]`, err);
-  const message = status >= 500 ? 'Internal server error' : err instanceof Error ? err.message : 'Request failed';
-  res.status(status).json({ error: message });
+  // Always include error message for now to help debug
+  const message = err instanceof Error ? err.message : 'Internal server error';
+  res.status(status).json({ error: message, context });
 }
 
 export function validateBody<T>(schema: ZodSchema<T>, body: unknown) {

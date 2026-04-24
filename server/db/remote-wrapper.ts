@@ -88,8 +88,13 @@ export async function getUserByUsername(username: string) {
 export async function getTeams() {
   ensureRemoteDb();
   const pool = getNeonPool();
-  const { rows } = await pool.query('SELECT * FROM public.teams ORDER BY name ASC');
-  return rows;
+  try {
+    const { rows } = await pool.query('SELECT * FROM public.teams ORDER BY name ASC');
+    return rows;
+  } catch (err) {
+    console.error('[DB] getTeams error:', err);
+    throw err;
+  }
 }
 
 export async function addTeam(team: any) {
@@ -264,7 +269,12 @@ export async function getStandings(competitionId: string) {
   const standingsMap = new Map();
   compStandings.forEach(s => standingsMap.set(s.team_id, s));
   
-  const finalStandings = allTeams.map(team => {
+  const finalStandings = allTeams
+  .filter(team => {
+    const name = String(team.name || '').trim().toUpperCase();
+    return name.length > 0 && name !== 'OFFICIAL HISTORY';
+  })
+  .map(team => {
     let stat = standingsMap.get(team.id);
     if (!stat) {
       stat = {
@@ -352,12 +362,17 @@ export async function addPayment(payment: any) {
 export async function getFixtures() {
   ensureRemoteDb();
   const pool = getNeonPool();
-  const { rows } = await pool.query('SELECT * FROM public.fixtures ORDER BY created_at DESC');
-  return rows.map((fixture: any) => ({
-    id: fixture.id,
-    week: fixture.week,
-    data: fixture.data,
-  }));
+  try {
+    const { rows } = await pool.query('SELECT * FROM public.fixtures ORDER BY created_at DESC');
+    return rows.map((fixture: any) => ({
+      id: fixture.id,
+      week: fixture.week,
+      data: fixture.data,
+    }));
+  } catch (err) {
+    console.error('[DB] getFixtures error:', err);
+    throw err;
+  }
 }
 
 export async function addFixture(fixture: any) {

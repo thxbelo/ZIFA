@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Trophy, Download, Loader2, ArrowRight, RefreshCw, Facebook, Twitter, Instagram, Music2 } from 'lucide-react';
+import { Trophy, Download, Loader2, ArrowRight, RefreshCw, Facebook, Instagram, Music2 } from 'lucide-react';
 import { toPng } from 'html-to-image';
 import { apiFetch } from '@/lib/apiClient';
 import { useSocket } from '@/lib/socket';
@@ -93,7 +93,6 @@ export default function LeagueTableSection() {
         cacheBust: true,
         pixelRatio: 3,
         backgroundColor: '#ffffff',
-        skipFonts: true,
         filter: (node) => {
           if (node instanceof HTMLElement && node.tagName.toLowerCase() === 'img') {
             if ((node as HTMLImageElement).src.includes('dicebear')) return false;
@@ -409,6 +408,13 @@ export default function LeagueTableSection() {
               </div>
             </div>
 
+            {/* Info Strip Above Footer */}
+            <div style={{ background: 'white', padding: '12px 0', textAlign: 'center', borderTop: '1px solid rgba(0,122,55,0.2)' }}>
+              <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: 1.5, textTransform: 'uppercase', color: '#666' }}>
+                PACIFIC BREEZE SOUTHERN REGION SOCCER LEAGUE - LOG STANDINGS - UPDATE
+              </div>
+            </div>
+
             <div style={{ minHeight: 64, background: '#006426', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 54px', color: 'white', borderTop: '8px solid rgba(255,255,255,0.1)' }}>
               <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', whiteSpace: 'nowrap', paddingRight: 30 }}>
                 PACIFIC BREEZE SOUTHERN REGION SOCCER LEAGUE - LOG STANDINGS - UPDATE
@@ -419,12 +425,19 @@ export default function LeagueTableSection() {
                 <div style={{ height: 42, width: 180, background: '#e9e9e9', display: 'flex', alignItems: 'center', justifyContent: 'space-evenly', padding: '0 10px' }}>
                   {[
                     { icon: Facebook, color: '#1877f2' },
-                    { icon: Twitter, color: '#000000' },
+                    { 
+                      icon: () => (
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+                          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                        </svg>
+                      ), 
+                      color: '#000000' 
+                    },
                     { icon: Instagram, color: '#e4405f' },
                     { icon: Music2, color: '#000000' }
                   ].map((social, idx) => (
                     <div key={idx} style={{ width: 26, height: 26, borderRadius: 999, background: social.color, color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <social.icon size={14} strokeWidth={3} />
+                      {typeof social.icon === 'function' ? <social.icon /> : <social.icon size={14} strokeWidth={3} />}
                     </div>
                   ))}
                 </div>

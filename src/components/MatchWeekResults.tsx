@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { apiFetch } from '@/lib/apiClient';
-import { Loader2, Facebook, Instagram, Twitter, Shield, RefreshCw } from 'lucide-react';
+import { Loader2, Facebook, Instagram, Shield, RefreshCw, Music2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useSocket } from '@/lib/socket';
 import LiveDataState from './LiveDataState';
@@ -215,16 +215,23 @@ export default function MatchWeekResults() {
           </div>
           
           <div className="flex gap-3 bg-gray-100/95 h-12 px-6 items-center shadow-inner">
-            {[
-              { icon: Facebook, color: 'bg-[#1877f2]' },
-              { icon: Twitter, color: 'bg-black' },
-              { icon: Instagram, color: 'bg-[#e4405f]' },
-              { icon: Music2, color: 'bg-black' }
-            ].map((social, sIdx) => (
-              <div key={sIdx} className={cn("w-7 h-7 rounded-full flex items-center justify-center text-white shadow-md hover:scale-110 transition-transform cursor-pointer", social.color)}>
-                  <social.icon className="w-4 h-4" />
-              </div>
-            ))}
+              {[
+                { icon: Facebook, color: 'bg-[#1877f2]' },
+                { 
+                  icon: () => (
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+                      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                    </svg>
+                  ), 
+                  color: 'bg-black' 
+                },
+                { icon: Instagram, color: 'bg-[#e4405f]' },
+                { icon: Music2, color: 'bg-black' }
+              ].map((social, idx) => (
+                <div key={idx} className={cn("w-8 h-8 rounded-full text-white flex items-center justify-center shadow-sm", social.color)}>
+                  {typeof social.icon === 'function' ? <social.icon /> : <social.icon size={16} strokeWidth={2.5} />}
+                </div>
+              ))}
           </div>
         </div>
       </div>

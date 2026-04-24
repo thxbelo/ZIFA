@@ -57,11 +57,6 @@ export default function FixtureEditor({ initialData, onClear }: { initialData?: 
   const captureRef = useRef<HTMLDivElement>(null);
   const { socket } = useSocket();
 
-  // Dynamic layout flag
-  const totalMatches = fixture.groups.reduce((acc, g) => acc + g.games.length, 0);
-  const isDense = totalMatches > 6;
-  const containerWidth = '900px';
-
   useEffect(() => {
     const fetchTeams = async () => {
       try {
@@ -129,7 +124,6 @@ export default function FixtureEditor({ initialData, onClear }: { initialData?: 
       });
 
       // 2. Sync INDIVIDUAL matches to the new normalized table (For Live Log/Standings)
-      // This ensures that current statuses/scores are synchronized immediately.
       for (const group of fixture.groups) {
         for (const game of group.games) {
           if (!game.teamA || !game.teamB) continue;
@@ -138,8 +132,8 @@ export default function FixtureEditor({ initialData, onClear }: { initialData?: 
             headers: getAuthHeaders(),
             body: JSON.stringify({
               id: game.id,
-              competition_id: 'comp-division-one', // Default
-              home_team_id: game.teamA, // In a real app, this would be a UUID, but we use names for now
+              competition_id: 'comp-division-one', 
+              home_team_id: game.teamA, 
               away_team_id: game.teamB,
               date: group.dateLabel,
               venue: game.venue,
@@ -180,7 +174,6 @@ export default function FixtureEditor({ initialData, onClear }: { initialData?: 
         cacheBust: true,
         pixelRatio: 3,
         backgroundColor: '#ffffff',
-        skipFonts: true,
       });
       const link = document.createElement('a');
       link.download = `zifa-${fixture.week.replace(/\s+/g, '-').toLowerCase()}.png`;

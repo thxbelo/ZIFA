@@ -1,5 +1,5 @@
 import React, { forwardRef } from 'react';
-import { Facebook, Twitter, Instagram, Music2 } from 'lucide-react';
+import { Facebook, Instagram, Music2 } from 'lucide-react';
 
 type ExportMatch = {
   id?: string;
@@ -109,8 +109,14 @@ const LeagueExportCard = forwardRef<HTMLDivElement, LeagueExportCardProps>(funct
                 {sponsor}
               </div>
               <div style={{ color: 'white', fontSize: 60, fontWeight: 900, letterSpacing: -1, lineHeight: 0.9, textTransform: 'uppercase', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <span style={{ display: 'block', whiteSpace: 'nowrap' }}>SOUTHERN REGION</span>
-                <span style={{ display: 'block', whiteSpace: 'nowrap' }}>SOCCER LEAGUE</span>
+                {league.includes(' ') ? (
+                  <>
+                    <span style={{ display: 'block', whiteSpace: 'nowrap' }}>{league.split(' ').slice(0, 2).join(' ')}</span>
+                    <span style={{ display: 'block', whiteSpace: 'nowrap' }}>{league.split(' ').slice(2).join(' ')}</span>
+                  </>
+                ) : (
+                  <span style={{ display: 'block', whiteSpace: 'nowrap' }}>{league}</span>
+                )}
               </div>
             </div>
 
@@ -122,8 +128,8 @@ const LeagueExportCard = forwardRef<HTMLDivElement, LeagueExportCardProps>(funct
           </div>
 
           <div style={{ marginTop: 24, marginBottom: -10, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
-            <div style={{ width: 380, height: 48, background: brightGreen, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-              <span style={{ color: 'white', fontSize: 28, fontWeight: 800, letterSpacing: 4, textTransform: 'uppercase' }}>{division}</span>
+            <div style={{ minWidth: 380, padding: '0 20px', height: 48, background: brightGreen, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+              <span style={{ color: 'white', fontSize: 28, fontWeight: 800, letterSpacing: 4, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{division}</span>
             </div>
             <div style={{ width: 620, height: 82, background: deepGreen, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 24px rgba(0,0,0,0.2)', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
               <span style={{ color: 'white', fontSize: 42, fontWeight: 900, letterSpacing: 10, lineHeight: 1, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>{formatTitle(title)}</span>
@@ -189,21 +195,35 @@ const LeagueExportCard = forwardRef<HTMLDivElement, LeagueExportCardProps>(funct
         </div>
       </div>
 
+      {/* Info Strip Above Footer */}
+      <div style={{ background: 'white', padding: '12px 0', textAlign: 'center', borderTop: `1px solid ${green}44` }}>
+        <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: 1.5, textTransform: 'uppercase', color: '#666' }}>
+          {sponsor} {league} - {week || 'MATCH WEEK'} - UPDATE
+        </div>
+      </div>
+
       <div style={{ minHeight: 64, background: deepGreen, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 54px', color: 'white' }}>
         <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', whiteSpace: 'nowrap', paddingRight: 20 }}>
-          PACIFIC BREEZE SOUTHERN REGION SOCCER LEAGUE - {week || 'MATCH WEEK'} - UPDATE
+          {sponsor} {league} - {week || 'MATCH WEEK'} - UPDATE
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
           <div style={{ background: '#145bff', color: 'white', height: 42, padding: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 900, whiteSpace: 'nowrap' }}>Follow Us!</div>
           <div style={{ height: 42, width: 180, background: '#e9e9e9', display: 'flex', alignItems: 'center', justifyContent: 'space-evenly', padding: '0 10px' }}>
             {[
               { icon: Facebook, color: '#1877f2' },
-              { icon: Twitter, color: '#000000' },
+              { 
+                icon: () => (
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                  </svg>
+                ), 
+                color: '#000000' 
+              },
               { icon: Instagram, color: '#e4405f' },
               { icon: Music2, color: '#000000' }
             ].map((social, idx) => (
               <div key={idx} style={{ width: 26, height: 26, borderRadius: 999, background: social.color, color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12 }}>
-                <social.icon size={14} strokeWidth={3} />
+                {typeof social.icon === 'function' ? <social.icon /> : <social.icon size={14} strokeWidth={3} />}
               </div>
             ))}
           </div>

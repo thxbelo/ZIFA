@@ -212,7 +212,6 @@ export default function ResultsEditor({ initialData, onClear }: { initialData?: 
         cacheBust: true,
         pixelRatio: 3,
         backgroundColor: '#ffffff',
-        skipFonts: true,
       });
       const link = document.createElement('a');
       link.download = `zifa-results-${results.week.replace(/\s+/g, '-').toLowerCase()}.png`;
