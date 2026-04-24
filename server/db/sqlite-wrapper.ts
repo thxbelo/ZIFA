@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 import bcrypt from 'bcryptjs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { isProduction } from '../config/security.js';
 
 dotenv.config();
 
@@ -75,7 +76,7 @@ export function initializeSqlite() {
   } catch {}
 
   const existingAdmin = db.prepare('SELECT id FROM users WHERE username = ?').get('admin');
-  if (!existingAdmin) {
+  if (!existingAdmin && !isProduction && process.env.SEED_DEFAULT_ADMIN !== 'false') {
     const hash = bcrypt.hashSync('admin', 10);
     db.prepare('INSERT INTO users (id, username, password_hash, role) VALUES (?, ?, ?, ?)').run(
       'admin-user-1',

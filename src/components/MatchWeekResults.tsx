@@ -111,8 +111,7 @@ export default function MatchWeekResults() {
   return (
     <div className="bg-brand-bg max-w-5xl mx-auto shadow-2xl border border-gray-200 overflow-hidden font-sans geometric-watermark animate-in fade-in duration-700">
       {/* Top Header Section */}
-      <div className="relative min-h-[280px] flex items-center justify-between px-8 md:px-16 overflow-hidden">
-        {/* Pitch Backdrop with Blur & Overlay */}
+      <div className="relative min-h-[340px] flex flex-col items-center justify-between py-10 overflow-hidden">
         <div 
           className="absolute inset-0 bg-cover bg-center transition-transform duration-[20s] hover:scale-110"
           style={{ backgroundImage: 'url("/Header Picture.png")' }}
@@ -120,43 +119,37 @@ export default function MatchWeekResults() {
         <div className="absolute inset-0 bg-brand-green/80 backdrop-blur-[2px]"></div>
         <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-brand-green to-transparent opacity-50"></div>
 
-        {/* Left Logo - Zifa Crest */}
-        <div className="relative z-10 w-24 h-24 md:w-32 md:h-32 drop-shadow-2xl hover:scale-105 transition-transform">
-          <img src="/logo-2.png" alt="Zifa Logo" className="w-full h-full object-contain" />
+        <div className="relative z-10 w-full flex items-start justify-between px-8 md:px-16">
+          <div className="w-24 h-24 md:w-36 md:h-36 drop-shadow-2xl">
+            <img src="/logo-2.png" alt="Zifa Logo" className="w-full h-full object-contain" />
+          </div>
+
+          <div className="flex-1 text-center px-6 pt-4">
+            <p className="font-barlow font-light text-xl md:text-2xl tracking-[0.4em] text-white uppercase mb-3">PACIFIC BREEZE</p>
+            <h1 className="font-barlow font-black text-4xl md:text-7xl tracking-tighter text-white uppercase leading-[0.85] drop-shadow-xl">
+              <span className="block whitespace-nowrap">SOUTHERN REGION</span>
+              <span className="block whitespace-nowrap">SOCCER LEAGUE</span>
+            </h1>
+          </div>
+
+          <div className="w-24 h-24 md:w-36 md:h-36 drop-shadow-2xl flex items-center justify-center">
+            <div className="w-full h-full bg-white rounded-full p-2 border-4 border-white/20 overflow-hidden flex items-center justify-center shadow-2xl">
+              <img src="/logo-1.jpg" alt="SRSL Logo" className="w-full h-full object-cover rounded-full" />
+            </div>
+          </div>
         </div>
 
-        {/* Center Title */}
-        <div className="relative z-10 flex-1 text-center px-6">
-          <p className="font-barlow font-bold text-lg md:text-xl tracking-[0.3em] text-white opacity-90 mb-2 uppercase drop-shadow-sm">PACIFIC BREEZE</p>
-          <h1 className="font-barlow font-black text-4xl md:text-7xl tracking-tighter text-white uppercase leading-[0.8] drop-shadow-xl">
-            SOUTHERN REGION<br />
-            <span className="text-brand-highlight">SOCCER LEAGUE</span>
-          </h1>
-        </div>
-
-        {/* Right Logo - Victoria Falls/Regional */}
-        <div className="relative z-10 w-24 h-24 md:w-32 md:h-32 drop-shadow-2xl hover:scale-105 transition-transform">
-          <img src="/logo-1.jpg" alt="SRSL Logo" className="w-full h-full object-contain rounded-full bg-white p-2 border-4 border-brand-highlight/20" />
-        </div>
-      </div>
-
-      {/* Division Pill Tag */}
-      <div className="bg-accent-green py-2.5 text-center relative z-20 shadow-lg">
-        <span className="text-white text-xl md:text-2xl font-black font-barlow tracking-[0.2em] uppercase italic drop-shadow-sm">
-          {results.division}
-        </span>
-      </div>
-
-      {/* Week Header Bar */}
-      <div className="bg-brand-green py-5 text-center relative z-10 border-t-4 border-white shadow-inner">
-        <h2 className="text-white text-3xl md:text-5xl font-black font-barlow tracking-[0.4em] uppercase drop-shadow-md">
-          {results.week}
-        </h2>
-        <div className="mt-3 flex justify-center">
-          <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[11px] font-black uppercase tracking-[0.2em] text-white/80">
-            {isRefreshing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <span className="h-2 w-2 rounded-full bg-brand-highlight" />}
-            {isRefreshing ? 'Refreshing' : 'Live database'}
-          </span>
+        <div className="relative z-10 flex flex-col items-center gap-0 mt-6 w-full mb-[-12px]">
+           <div className="bg-accent-green px-12 py-3 shadow-lg w-[320px] md:w-[440px] text-center border-b border-white/5">
+             <span className="text-white text-lg md:text-2xl font-black font-barlow tracking-widest uppercase">
+               {results.division}
+             </span>
+           </div>
+           <div className="bg-brand-green px-16 py-6 shadow-2xl w-[420px] md:w-[640px] text-center border-t border-white/10">
+             <h2 className="text-white text-2xl md:text-5xl font-black font-barlow tracking-[0.2em] uppercase leading-none">
+               MATCH RESULTS
+             </h2>
+           </div>
         </div>
       </div>
 
@@ -209,30 +202,27 @@ export default function MatchWeekResults() {
       </div>
 
       {/* Advanced Footer Social Strip */}
-      <div className="bg-brand-green p-6 md:p-10 flex flex-col md:flex-row items-center justify-between gap-8 border-t-8 border-brand-highlight/20 relative">
-        <div className="absolute top-0 right-0 w-64 h-full bg-white/5 skew-x-[-20deg] pointer-events-none" />
-        
-        <div>
-           <p className="text-white text-xs font-black uppercase tracking-[0.4em] opacity-80 mb-2">PACIFIC BREEZE LEAGUE UPDATE</p>
-           <p className="text-brand-highlight text-[10px] font-black uppercase tracking-widest border-l-2 border-brand-highlight pl-4">
-             {results.week} OFFICIAL RECAP
+      <div className="bg-brand-green min-h-[80px] px-8 flex items-center justify-between gap-6 border-t-8 border-brand-highlight/10 overflow-hidden">
+        <div className="whitespace-nowrap overflow-hidden pr-6">
+           <p className="text-white text-xs md:text-[13px] font-black uppercase tracking-widest">
+             PACIFIC BREEZE SOUTHERN REGION SOCCER LEAGUE - {results.week} - UPDATE
            </p>
         </div>
         
-        <div className="flex items-center gap-8">
-          <button className="bg-brand-blue text-white font-black text-sm uppercase px-8 py-3 rounded-xl shadow-xl hover:bg-blue-600 transition-all hover:scale-105 active:scale-95 group flex items-center gap-3">
-             <Shield className="w-4 h-4 text-brand-highlight" />
+        <div className="flex items-center gap-0 shrink-0">
+          <div className="bg-brand-blue text-white font-black text-sm uppercase px-8 py-3 h-12 flex items-center shadow-xl whitespace-nowrap">
              Follow Us!
-          </button>
+          </div>
           
-          <div className="flex gap-4">
+          <div className="flex gap-3 bg-gray-100/95 h-12 px-6 items-center shadow-inner">
             {[
-              { icon: Facebook, label: 'FB' },
-              { icon: Instagram, label: 'IG' },
-              { icon: Twitter, label: 'X' }
+              { icon: Facebook, color: 'bg-[#1877f2]' },
+              { icon: Twitter, color: 'bg-black' },
+              { icon: Instagram, color: 'bg-[#e4405f]' },
+              { icon: Music2, color: 'bg-black' }
             ].map((social, sIdx) => (
-              <div key={sIdx} className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center text-white hover:bg-brand-highlight hover:text-brand-green transition-all duration-300 cursor-pointer shadow-lg group">
-                  <social.icon className="w-5 h-5 transition-transform group-hover:scale-110" />
+              <div key={sIdx} className={cn("w-7 h-7 rounded-full flex items-center justify-center text-white shadow-md hover:scale-110 transition-transform cursor-pointer", social.color)}>
+                  <social.icon className="w-4 h-4" />
               </div>
             ))}
           </div>

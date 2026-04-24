@@ -7,6 +7,7 @@ import { apiFetch } from '@/lib/apiClient';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import ExportWatermark from './ExportWatermark';
+import LeagueExportCard from './export/LeagueExportCard';
 
 export interface Match {
   id: string;
@@ -520,168 +521,17 @@ export default function ResultsEditor({ initialData, onClear }: { initialData?: 
           <div className="sticky top-24 animate-in fade-in slide-in-from-right-4 duration-500">
             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-4 text-center">Export Preview (Scaled 55%)</p>
             <div className="bg-gray-200 rounded-3xl p-4 md:p-8 overflow-x-auto overflow-y-hidden w-full flex shadow-inner border border-gray-300 scrollbar-thin scrollbar-thumb-gray-400">
-              <div style={{ transform: 'scale(1)', transformOrigin: 'top left', minWidth: '1100px' }} className="mx-auto sm:scale-[0.5] sm:origin-top center">
-                <div 
-                  ref={captureRef} 
-                  className="geometric-watermark"
-                  style={{ 
-                    width: containerWidth, 
-                    backgroundColor: '#F8F9FA', 
-                    boxShadow: '0 40px 100px rgba(0,0,0,0.3)', 
-                    fontFamily: "'Inter', sans-serif",
-                    overflow: 'hidden',
-                    position: 'relative'
-                  }}
-                >
-                  <ExportWatermark />
-                  <div style={{ position: 'relative', zIndex: 1 }}>
-                  
-                  {/* Header Pitch Backdrop */}
-                  <div style={{ 
-                    padding: '25px 60px', 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'space-between', 
-                    color: '#ffffff', 
-                    position: 'relative', 
-                    overflow: 'hidden',
-                    minHeight: '220px'
-                  }}>
-                    <div style={{
-                      position: 'absolute',
-                      inset: 0,
-                      backgroundImage: 'url("/Header Picture.png")',
-                      backgroundSize: 'cover',
-                      backgroundPosition: 'center',
-                      zIndex: 0
-                    }}></div>
-                    <div style={{
-                      position: 'absolute',
-                      inset: 0,
-                      backgroundColor: 'rgba(1, 81, 39, 0.88)', 
-                      zIndex: 1
-                    }}></div>
-                    <div style={{
-                      position: 'absolute',
-                      inset: '0 0 0 0',
-                      background: 'linear-gradient(to top, #015127, transparent)',
-                      opacity: 0.6,
-                      zIndex: 2
-                    }}></div>
-
-                    <div style={{ width: '120px', height: '120px', flexShrink: 0, position: 'relative', zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <img src="/logo-2.png" alt="Zifa Logo" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
-                    </div>
-                    
-                    <div style={{ textAlign: 'center', flex: 1, padding: '0 30px', position: 'relative', zIndex: 10 }}>
-                      <p style={{ fontFamily: "'Barlow', sans-serif", fontSize: '14px', fontWeight: 800, letterSpacing: '0.4em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.9)', marginBottom: '8px' }}>
-                        PACIFIC BREEZE
-                      </p>
-                      <h1 style={{ fontFamily: "'Barlow', sans-serif", fontSize: '44px', fontWeight: 900, letterSpacing: '-0.04em', lineHeight: '0.9', textTransform: 'uppercase', color: '#ffffff' }}>
-                        SOUTHERN REGION<br />
-                        <span style={{ color: '#39FF14' }}>SOCCER LEAGUE</span>
-                      </h1>
-                    </div>
-
-                    <div style={{ width: '120px', height: '120px', flexShrink: 0, position: 'relative', zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: 'white', padding: '10px', border: '4px solid rgba(57, 255, 20, 0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                        <img src="/logo-1.jpg" alt="SRSL Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Division Tag */}
-                  <div style={{ background: '#00A859', padding: '8px', textAlign: 'center', position: 'relative', zIndex: 20 }}>
-                    <span style={{ color: 'white', fontSize: '18px', fontWeight: 900, fontFamily: "'Barlow', sans-serif", letterSpacing: '0.2em', textTransform: 'uppercase', fontStyle: 'italic' }}>
-                      {results.division}
-                    </span>
-                  </div>
-
-                  {/* Week Header */}
-                  <div style={{ background: '#015127', padding: '15px', textAlign: 'center', borderTop: '4px solid white', position: 'relative', zIndex: 10 }}>
-                    <h2 style={{ color: 'white', fontSize: '32px', fontWeight: 900, fontFamily: "'Barlow', sans-serif", letterSpacing: '0.4em', textTransform: 'uppercase' }}>
-                      {results.week}
-                    </h2>
-                  </div>
-
-                  {/* Main Results Grid */}
-                  <div style={{ padding: '40px 60px', minHeight: '300px' }}>
-                    {results.days.map((day, dIdx) => (
-                      <div key={day.id} style={{ marginBottom: dIdx === results.days.length - 1 ? 0 : '40px' }}>
-                        {/* Day Heading */}
-                        <div style={{ borderBottom: '2px solid rgba(1, 81, 39, 0.1)', paddingBottom: '12px', marginBottom: '24px', textAlign: 'center' }}>
-                          <h3 style={{ color: '#015127', fontSize: '32px', fontWeight: 900, fontFamily: "'Barlow', sans-serif", textTransform: 'uppercase', lineHeight: 1 }}>
-                            {day.date}
-                          </h3>
-                        </div>
-
-                        {/* Match Rows */}
-                        <div style={{ display: 'grid', gridTemplateColumns: isDense ? 'repeat(2, 1fr)' : '1fr', gap: isDense ? '12px 24px' : '12px' }}>
-                          {day.matches.map((match) => (
-                            <div key={match.id} style={{ display: 'flex', alignItems: 'center', gap: isDense ? '10px' : '14px' }}>
-                              <div style={{ flex: 1, background: 'white', padding: isDense ? '12px 16px' : '16px 24px', borderRadius: '15px', border: '1px solid #eee', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '20px', boxShadow: '0 4px 15px rgba(0,0,0,0.02)' }}>
-                                <div style={{ flex: 1, textAlign: 'right', textTransform: 'uppercase', fontWeight: 900, fontSize: isDense ? '14px' : '16px', color: '#000' }}>{match.teamA}</div>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: '#F8F9FA', padding: isDense ? '4px 12px' : '6px 16px', borderRadius: '12px', border: '1px solid #eee' }}>
-                                  <span style={{ color: '#015127', fontSize: isDense ? '20px' : '24px', fontWeight: 900, width: isDense ? '30px' : '35px', textAlign: 'center' }}>{match.scoreA}</span>
-                                  <span style={{ color: '#DDD', fontSize: '11px', fontWeight: 900 }}>VS</span>
-                                  <span style={{ color: '#015127', fontSize: isDense ? '20px' : '24px', fontWeight: 900, width: isDense ? '30px' : '35px', textAlign: 'center' }}>{match.scoreB}</span>
-                                </div>
-                                <div style={{ flex: 1, textAlign: 'left', textTransform: 'uppercase', fontWeight: 900, fontSize: isDense ? '14px' : '16px', color: '#000' }}>{match.teamB}</div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Footer Strip */}
-                  <div style={{ 
-                    background: '#015127', 
-                    padding: '25px 60px', 
-                    display: 'flex', 
-                    justifyContent: 'space-between', 
-                    alignItems: 'center', 
-                    borderTop: '8px solid #39FF14', 
-                    position: 'relative' 
-                  }}>
-                    <div style={{ flex: 1 }}>
-                      <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '10px', fontWeight: 800, letterSpacing: '0.3em', textTransform: 'uppercase', marginBottom: '4px' }}>
-                        PACIFIC BREEZE LEAGUE OFFICIAL
-                      </p>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <span style={{ background: '#39FF14', color: '#015127', padding: '3px 10px', borderRadius: '5px', fontSize: '12px', fontWeight: 900, fontFamily: "'Barlow', sans-serif" }}>
-                          RESULTS
-                        </span>
-                        <p style={{ color: '#ffffff', fontSize: '12px', fontWeight: 700, letterSpacing: '0.1em' }}>
-                          {results.week.toUpperCase()} OFFICIAL RECAP
-                        </p>
-                      </div>
-                    </div>
-                    
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                      <div style={{ 
-                        background: '#FFD200', 
-                        color: '#015127', 
-                        fontWeight: 900, 
-                        fontSize: '16px', 
-                        textTransform: 'uppercase', 
-                        padding: '14px 40px', 
-                        borderRadius: '16px', 
-                        boxShadow: '0 10px 30px rgba(255, 210, 0, 0.25)',
-                        fontFamily: "'Barlow', sans-serif",
-                        whiteSpace: 'nowrap',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        lineHeight: 1
-                      }}>
-                        Follow Us!
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                </div>
+              <div className="mx-auto sm:scale-[0.55] sm:origin-top" style={{ transformOrigin: 'top left', minWidth: '900px' }}>
+                <LeagueExportCard
+                  ref={captureRef}
+                  sponsor="PACIFIC BREEZE"
+                  league={results.division}
+                  division="DIVISION ONE"
+                  title="MATCH RESULTS"
+                  week={results.week}
+                  groups={results.days}
+                  variant="results"
+                />
               </div>
             </div>
           </div>

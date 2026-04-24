@@ -1,5 +1,6 @@
 import dotenv from 'dotenv';
 import { Pool } from 'pg';
+import { isProduction } from '../config/security.js';
 
 dotenv.config();
 
@@ -213,6 +214,11 @@ async function ensureNeonSchema(pool: Pool) {
 }
 
 export async function ensureNeonAdmin(pool: Pool) {
+  if (isProduction || process.env.SEED_DEFAULT_ADMIN === 'false') {
+    console.log('[ZIFA] Default admin seed skipped.');
+    return;
+  }
+
   const { rows } = await pool.query('SELECT id FROM public.users WHERE username = $1 LIMIT 1', ['admin']);
   if (rows.length > 0) return;
 

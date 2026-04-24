@@ -4,6 +4,7 @@ import { createServerApp } from './app.js';
 
 import { createServer } from 'http';
 import { Server } from 'socket.io';
+import { getAllowedOrigins } from './config/security.js';
 
 dotenv.config();
 const DB_TYPE = process.env.DB_TYPE || 'sqlite';
@@ -30,7 +31,7 @@ async function bootstrap() {
 
   io = new Server(httpServer, {
     cors: {
-      origin: '*', // Allow all origins for dev; refine for production
+      origin: getAllowedOrigins(),
       methods: ['GET', 'POST']
     }
   });

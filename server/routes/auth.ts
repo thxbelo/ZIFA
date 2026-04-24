@@ -1,8 +1,9 @@
 import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'zifa-southern-region-secret-2026';
+import { getJwtSecret } from '../config/security.js';
+import { sendError, validateBody } from '../utils/http.js';
+import { loginSchema } from '../validation/schemas.js';
 
 type DbWrapper = {
   getUserByUsername: (username: string) => Promise<any>;
@@ -12,10 +13,8 @@ export function createAuthRouter(dbWrapper: DbWrapper) {
   const router = Router();
 
   router.post('/login', async (req, res) => {
-    const { username, password } = req.body;
-
     try {
-      console.log('[Auth] Attempting login for:', username);
+      const { username, password } = validateBody(loginSchema, req.body);
       if (!dbWrapper.getUserByUsername) {
         console.error('[Auth] Error: getUserByUsername is missing on dbWrapper!', Object.keys(dbWrapper));
         throw new Error('Database adapter misconfiguration: getUserByUsername missing');
@@ -27,15 +26,14 @@ export function createAuthRouter(dbWrapper: DbWrapper) {
         return res.status(401).json({ error: 'Invalid credentials' });
       }
 
-      const token = jwt.sign({ id: user.id, username: user.username, role: user.role }, JWT_SECRET, { expiresIn: '12h' });
+      const token = jwt.sign({ id: user.id, username: user.username, role: user.role }, getJwtSecret(), { expiresIn: '12h' });
 
       res.json({
         token,
         user: { id: user.id, username: user.username, role: user.role },
       });
     } catch (err: any) {
-      console.error('Login Error Detailed:', err);
-      res.status(500).json({ error: 'Internal server error during login: ' + err.message });
+      sendError(res, err, 'Auth login', err?.status || 500);
     }
   });
 

@@ -6,8 +6,9 @@ import { getAuthHeaders, getAuthToken } from '@/store/authStore';
 import { toast } from 'sonner';
 import { apiFetch } from '@/lib/apiClient';
 import { cn } from '@/lib/utils';
-import ExportWatermark from './ExportWatermark';
 import { useSocket } from '@/lib/socket';
+import LeagueExportCard from './export/LeagueExportCard';
+import ExportWatermark from './ExportWatermark';
 
 interface Game {
   id: string;
@@ -520,200 +521,17 @@ export default function FixtureEditor({ initialData, onClear }: { initialData?: 
         <div className="sticky top-24">
           <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-4 text-center">Export Preview (Scaled 60%)</p>
           <div className="bg-gray-200 rounded-3xl p-4 md:p-6 overflow-x-auto overflow-y-hidden w-full flex shadow-inner border border-gray-300 scrollbar-thin scrollbar-thumb-gray-400">
-            {/* Scale only for on-screen preview; capture uses the unscaled inner element */}
-            <div style={{ transform: 'scale(1)', transformOrigin: 'top left', minWidth: '850px' }} className="mx-auto sm:scale-[0.6] sm:origin-top center">
-              <div
+            <div className="mx-auto sm:scale-[0.6] sm:origin-top" style={{ transformOrigin: 'top left', minWidth: '900px' }}>
+              <LeagueExportCard
                 ref={captureRef}
-                className="geometric-watermark"
-                style={{
-                  width: containerWidth,
-                  fontFamily: "'Inter', sans-serif",
-                  backgroundColor: '#F8F9FA',
-                  boxShadow: '0 40px 100px rgba(0,0,0,0.3)',
-                  overflow: 'hidden',
-                  position: 'relative'
-                }}
-              >
-                <ExportWatermark />
-                <div style={{ position: 'relative', zIndex: 1 }}>
-                {/* Header Pitch Backdrop — Compact */}
-                <div style={{ 
-                  padding: '22px 40px', 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'space-between', 
-                  color: '#ffffff', 
-                  position: 'relative', 
-                  overflow: 'hidden',
-                  minHeight: '160px'
-                }}>
-                  <div style={{
-                    position: 'absolute',
-                    inset: 0,
-                    backgroundImage: 'url("/Header Picture.png")',
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    zIndex: 0
-                  }}></div>
-                  <div style={{
-                    position: 'absolute',
-                    inset: 0,
-                    backgroundColor: 'rgba(1, 81, 39, 0.88)',
-                    zIndex: 1
-                  }}></div>
-                  <div style={{
-                    position: 'absolute',
-                    inset: '0 0 0 0',
-                    background: 'linear-gradient(to top, #015127, transparent)',
-                    opacity: 0.6,
-                    zIndex: 2
-                  }}></div>
-
-                  <div style={{ width: '100px', height: '100px', flexShrink: 0, position: 'relative', zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <img src="/logo-2.png" alt="Zifa Logo" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
-                  </div>
-                  
-                  <div style={{ textAlign: 'center', flex: 1, padding: '0 20px', position: 'relative', zIndex: 10 }}>
-                    <p style={{ fontFamily: "'Barlow', sans-serif", fontSize: '11px', fontWeight: 800, letterSpacing: '0.4em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.9)', marginBottom: '6px' }}>
-                      {fixture.sponsor}
-                    </p>
-                    <h1 style={{ fontFamily: "'Barlow', sans-serif", fontSize: '34px', fontWeight: 900, letterSpacing: '-0.04em', lineHeight: '0.9', textTransform: 'uppercase', color: '#ffffff' }}>
-                      SOUTHERN REGION<br />
-                      <span style={{ color: '#39FF14' }}>SOCCER LEAGUE</span>
-                    </h1>
-                  </div>
-
-                  <div style={{ width: '100px', height: '100px', flexShrink: 0, position: 'relative', zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: 'white', padding: '8px', border: '4px solid rgba(57, 255, 20, 0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                      <img src="/logo-1.jpg" alt="SRSL Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Week Banner — slim */}
-                <div style={{ display: 'flex', alignItems: 'stretch', gap: '12px', padding: '10px 40px', background: '#F8F9FA', position: 'relative', zIndex: 20 }}>
-                  <div style={{
-                    flex: 1,
-                    background: '#015127',
-                    color: '#ffffff',
-                    padding: '8px 16px',
-                    fontWeight: 900,
-                    fontFamily: "'Barlow', sans-serif",
-                    fontSize: '13px',
-                    letterSpacing: '0.2em',
-                    textAlign: 'center',
-                    borderRadius: '8px',
-                    border: '2px solid #00A859',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}>
-                    {fixture.week.toUpperCase()}
-                  </div>
-                  <div style={{
-                    background: '#39FF14',
-                    color: '#015127',
-                    padding: '8px 28px',
-                    fontWeight: 900,
-                    fontFamily: "'Barlow', sans-serif",
-                    fontSize: '18px',
-                    letterSpacing: '0.1em',
-                    fontStyle: 'italic',
-                    borderRadius: '8px',
-                    boxShadow: '0 6px 12px rgba(57, 255, 20, 0.2)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}>
-                    FIXTURE
-                  </div>
-                </div>
-
-                {/* Main Content Body — Ladder format */}
-                <div style={{ padding: '10px 40px 20px' }}>
-                  {fixture.groups.map((group, gi) => (
-                    <div key={group.id} style={{ marginBottom: gi === fixture.groups.length - 1 ? 0 : '8px' }}>
-                      {/* Date Header — slim bar */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(1, 81, 39, 0.07)', borderLeft: '4px solid #015127', padding: '5px 10px', marginBottom: '5px', borderRadius: '4px' }}>
-                        <span style={{ color: '#015127', fontWeight: 900, fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.2em', whiteSpace: 'nowrap' }}>{group.dayLabel}</span>
-                        <span style={{ color: '#015127', fontWeight: 900, fontSize: '11px', textTransform: 'uppercase', fontFamily: "'Barlow', sans-serif" }}>{group.dateLabel}</span>
-                      </div>
-
-                      {/* Ladder rows — one match per row */}
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        {group.games.map((game, gIdx) => (
-                          <div key={game.id} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            {/* Row number */}
-                            <div style={{ width: '18px', textAlign: 'center', color: '#bbb', fontSize: '9px', fontWeight: 900, flexShrink: 0 }}>{gIdx + 1}</div>
-                            {/* Team A */}
-                            <div style={{ flex: 1, background: 'white', padding: '7px 10px', borderRadius: '8px', border: '1px solid #eee', textAlign: 'right', textTransform: 'uppercase', fontWeight: 900, fontSize: '11px', color: '#111', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>{game.teamA}</div>
-                            {/* VS badge */}
-                            <div style={{ width: '28px', textAlign: 'center', color: '#015127', fontWeight: 900, fontSize: '9px', fontStyle: 'italic', flexShrink: 0 }}>VS</div>
-                            {/* Team B */}
-                            <div style={{ flex: 1, background: 'white', padding: '7px 10px', borderRadius: '8px', border: '1px solid #eee', textAlign: 'left', textTransform: 'uppercase', fontWeight: 900, fontSize: '11px', color: '#111', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>{game.teamB}</div>
-                            {/* Venue */}
-                            <div style={{ width: '140px', background: 'rgba(1,81,39,0.05)', border: '1px solid rgba(1,81,39,0.15)', padding: '7px 8px', borderRadius: '8px', textAlign: 'center', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', flexShrink: 0 }}>
-                              <span style={{ color: '#015127', fontSize: '9px', fontWeight: 900, textTransform: 'uppercase' }}>{game.venue || 'TBA'}</span>
-                            </div>
-                            {/* Time */}
-                            <div style={{ width: '62px', background: '#015127', padding: '7px 6px', borderRadius: '8px', textAlign: 'center', flexShrink: 0 }}>
-                              <span style={{ color: '#39FF14', fontSize: '9px', fontWeight: 900, fontFamily: "'Barlow', sans-serif", whiteSpace: 'nowrap' }}>{game.time}</span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Footer Strip — slim */}
-                <div style={{ 
-                  background: '#015127', 
-                  padding: '14px 40px', 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
-                  alignItems: 'center', 
-                  borderTop: '5px solid #39FF14', 
-                  position: 'relative' 
-                }}>
-                  <div style={{ flex: 1 }}>
-                    <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '9px', fontWeight: 800, letterSpacing: '0.3em', textTransform: 'uppercase', marginBottom: '2px' }}>
-                      PACIFIC BREEZE LEAGUE OFFICIAL
-                    </p>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ background: '#39FF14', color: '#015127', padding: '2px 8px', borderRadius: '4px', fontSize: '10px', fontWeight: 900, fontFamily: "'Barlow', sans-serif" }}>
-                        FIXTURES
-                      </span>
-                      <p style={{ color: '#ffffff', fontSize: '10px', fontWeight: 700, letterSpacing: '0.1em' }}>
-                        {fixture.week.toUpperCase()} SCHEDULE
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div style={{ 
-                      background: '#FFD200', 
-                      color: '#015127', 
-                      fontWeight: 900, 
-                      fontSize: '10px', 
-                      textTransform: 'uppercase', 
-                      padding: '8px 20px', 
-                      borderRadius: '8px', 
-                      boxShadow: '0 6px 16px rgba(255, 210, 0, 0.25)',
-                      fontFamily: "'Barlow', sans-serif",
-                      whiteSpace: 'nowrap',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      lineHeight: 1
-                    }}>
-                      Follow Us!
-                    </div>
-                  </div>
-                </div>
-
-              </div>
-              </div>
+                sponsor={fixture.sponsor}
+                league={fixture.league}
+                division="DIVISION ONE"
+                title="MATCH FIXTURE"
+                week={fixture.week}
+                groups={fixture.groups}
+                variant="fixture"
+              />
             </div>
           </div>
         </div>

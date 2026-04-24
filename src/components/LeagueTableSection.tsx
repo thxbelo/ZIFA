@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Trophy, Download, Loader2, ArrowRight, RefreshCw } from 'lucide-react';
+import { Trophy, Download, Loader2, ArrowRight, RefreshCw, Facebook, Twitter, Instagram, Music2 } from 'lucide-react';
 import { toPng } from 'html-to-image';
 import { apiFetch } from '@/lib/apiClient';
 import { useSocket } from '@/lib/socket';
@@ -292,65 +292,54 @@ export default function LeagueTableSection() {
         >
           <ExportWatermark />
           <div style={{ position: 'relative', zIndex: 1 }}>
-            {/* Header Pitch Backdrop */}
-            <div style={{ 
-              padding: '40px 60px', 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'space-between', 
-              color: '#ffffff', 
-              position: 'relative', 
-              overflow: 'hidden',
-              minHeight: '280px'
-            }}>
-              <div style={{
-                position: 'absolute',
-                inset: 0,
-                backgroundImage: 'url("/Header Picture.png")',
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                zIndex: 0
-              }}></div>
-              <div style={{
-                position: 'absolute',
-                inset: 0,
-                backgroundColor: 'rgba(1, 81, 39, 0.88)', 
-                zIndex: 1
-              }}></div>
-              <div style={{
-                position: 'absolute',
-                inset: '0 0 0 0',
-                background: 'linear-gradient(to top, #015127, transparent)',
-                opacity: 0.6,
-                zIndex: 2
-              }}></div>
+            <div style={{ position: 'relative', height: 420, overflow: 'hidden', background: '#007a37', display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 40 }}>
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  backgroundImage: 'url("/Header Picture.png")',
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  opacity: 0.42,
+                }}
+              />
+              <div style={{ position: 'absolute', inset: 0, background: 'rgba(0, 122, 55, 0.78)' }} />
+              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,0.05), rgba(0,82,34,0.5))' }} />
 
-              <div style={{ width: '160px', height: '160px', flexShrink: 0, position: 'relative', zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <img src="/logo-2.png" alt="Zifa Logo" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
-              </div>
-              
-              <div style={{ textAlign: 'center', flex: 1, padding: '0 30px', position: 'relative', zIndex: 10 }}>
-                <p style={{ fontFamily: "'Barlow', sans-serif", fontSize: '18px', fontWeight: 800, letterSpacing: '0.4em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.9)', marginBottom: '8px' }}>
-                  PACIFIC BREEZE
-                </p>
-                <h1 style={{ fontFamily: "'Barlow', sans-serif", fontSize: '56px', fontWeight: 900, letterSpacing: '-0.04em', lineHeight: '0.9', textTransform: 'uppercase', color: '#ffffff' }}>
-                  SOUTHERN REGION<br />
-                  <span style={{ color: '#39FF14' }}>SOCCER LEAGUE</span>
-                </h1>
-              </div>
+              <div style={{ position: 'relative', zIndex: 10, width: '100%', display: 'grid', gridTemplateColumns: '170px 1fr 170px', alignItems: 'start', padding: '0 54px' }}>
+                <div style={{ display: 'flex', justifyContent: 'center' }}>
+                  <img src="/logo-2.png" alt="Zifa Logo" style={{ width: 142, height: 200, objectFit: 'contain' }} />
+                </div>
 
-              <div style={{ width: '160px', height: '160px', flexShrink: 0, position: 'relative', zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: 'white', padding: '12px', border: '5px solid rgba(57, 255, 20, 0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                  <img src="/logo-1.jpg" alt="SRSL Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                <div style={{ textAlign: 'center', paddingTop: 12 }}>
+                  <p style={{ fontFamily: "'Barlow', sans-serif", fontSize: '28px', fontWeight: 300, letterSpacing: '0.4em', textTransform: 'uppercase', color: 'white', marginBottom: '12px' }}>
+                    PACIFIC BREEZE
+                  </p>
+                  <h1 style={{ fontFamily: "'Barlow', sans-serif", fontSize: '60px', fontWeight: 900, letterSpacing: '-1px', lineHeight: '0.9', textTransform: 'uppercase', color: 'white', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <span style={{ display: 'block', whiteSpace: 'nowrap' }}>SOUTHERN REGION</span>
+                    <span style={{ display: 'block', whiteSpace: 'nowrap' }}>SOCCER LEAGUE</span>
+                  </h1>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 22 }}>
+                  <div style={{ width: 124, height: 124, borderRadius: 999, background: '#fff', border: '4px solid rgba(255,255,255,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,0,0,0.3)' }}>
+                    <img src="/logo-1.jpg" alt="SRSL Logo" style={{ width: 114, height: 114, objectFit: 'cover' }} />
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Title Bar */}
-            <div style={{ background: '#00A859', padding: '14px', textAlign: 'center', position: 'relative', zIndex: 20 }}>
-              <span style={{ color: 'white', fontSize: '26px', fontWeight: 900, fontFamily: "'Barlow', sans-serif", letterSpacing: '0.2em', textTransform: 'uppercase', fontStyle: 'italic' }}>
-                Week 5 Log Standing as at 19 April 2026
-              </span>
+              <div style={{ marginTop: 24, marginBottom: -10, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0, position: 'relative', zIndex: 10 }}>
+                <div style={{ width: 420, height: 48, background: '#05c807', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+                  <span style={{ color: 'white', fontSize: '28px', fontWeight: 900, fontFamily: "'Barlow', sans-serif", letterSpacing: '0.3em', textTransform: 'uppercase' }}>
+                    DIVISION ONE
+                  </span>
+                </div>
+                <div style={{ width: 680, height: 82, background: '#006426', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 24px rgba(0,0,0,0.2)', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+                  <span style={{ color: 'white', fontSize: '46px', fontWeight: 900, fontFamily: "'Barlow', sans-serif", letterSpacing: '0.2em', textTransform: 'uppercase' }}>
+                    LOG STANDINGS
+                  </span>
+                </div>
+              </div>
             </div>
 
             {/* Table Area */}
@@ -420,40 +409,24 @@ export default function LeagueTableSection() {
               </div>
             </div>
 
-            {/* Footer Strip */}
-            <div style={{ background: '#015127', padding: '25px 60px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '8px solid #39FF14' }}>
-              <div style={{ flex: 1 }}>
-                <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px', fontWeight: 800, letterSpacing: '0.3em', textTransform: 'uppercase', marginBottom: '6px' }}>
-                  PACIFIC BREEZE LEAGUE OFFICIAL
-                </p>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <span style={{ background: '#39FF14', color: '#015127', padding: '4px 14px', borderRadius: '6px', fontSize: '16px', fontWeight: 900, fontFamily: "'Barlow', sans-serif" }}>
-                    STANDINGS
-                  </span>
-                  <p style={{ color: '#ffffff', fontSize: '16px', fontWeight: 700, letterSpacing: '0.1em' }}>
-                    UPDATED: {new Date().toLocaleDateString('en-GB').replace(/\//g, '.')}
-                  </p>
-                </div>
+            <div style={{ minHeight: 64, background: '#006426', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 54px', color: 'white', borderTop: '8px solid rgba(255,255,255,0.1)' }}>
+              <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', whiteSpace: 'nowrap', paddingRight: 30 }}>
+                PACIFIC BREEZE SOUTHERN REGION SOCCER LEAGUE - LOG STANDINGS - UPDATE
               </div>
               
-              <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                <div style={{ 
-                  background: '#FFD200', 
-                  color: '#015127', 
-                  fontWeight: 900, 
-                  fontSize: '18px', 
-                  textTransform: 'uppercase', 
-                  padding: '16px 48px', 
-                  borderRadius: '20px', 
-                  boxShadow: '0 10px 30px rgba(255, 210, 0, 0.25)',
-                  fontFamily: "'Barlow', sans-serif",
-                  whiteSpace: 'nowrap',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  lineHeight: 1
-                }}>
-                  Follow Us!
+              <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
+                <div style={{ background: '#145bff', color: 'white', height: 42, padding: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 900, whiteSpace: 'nowrap' }}>Follow Us!</div>
+                <div style={{ height: 42, width: 180, background: '#e9e9e9', display: 'flex', alignItems: 'center', justifyContent: 'space-evenly', padding: '0 10px' }}>
+                  {[
+                    { icon: Facebook, color: '#1877f2' },
+                    { icon: Twitter, color: '#000000' },
+                    { icon: Instagram, color: '#e4405f' },
+                    { icon: Music2, color: '#000000' }
+                  ].map((social, idx) => (
+                    <div key={idx} style={{ width: 26, height: 26, borderRadius: 999, background: social.color, color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <social.icon size={14} strokeWidth={3} />
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
